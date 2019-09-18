@@ -1,0 +1,42 @@
+{
+  "name": "zengine-plugin-migrator",
+  "version": "0.0.1",
+  "description": "Zengine v1 plugin wrapper for migrating to v2 environment",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel serve v2-src/index.html --https"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Wizehive/zengine-plugin-migrator.git"
+  },
+  "keywords": [
+    "plugin",
+    "wrapper",
+    "v2",
+    "angularjs"
+  ],
+  "author": "Ben Steward <ben.steward@wizehive.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Wizehive/zengine-plugin-migrator/issues"
+  },
+  "homepage": "https://github.com/Wizehive/zengine-plugin-migrator#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.3",
+    "parcel-plugin-copy-file": "github:tehpsalmist/parcel-plugin-copy-file",
+    "parcel-plugin-watch-reload": "0.0.2",
+    "parcel-plugin-zengine-css-migrator": "github:tehpsalmist/parcel-plugin-zengine-css-migrator",
+    "parcel-plugin-zengine-html-migrator": "github:tehpsalmist/parcel-plugin-zengine-html-migrator",
+    "parcel-plugin-zengine-js-migrator": "github:tehpsalmist/parcel-plugin-zengine-js-migrator"
+  },
+  "dependencies": {
+    "@zenginehq/post-rpc-client": "^0.7.1"
+  },
+  "watchreload": {
+    "files": [
+      "plugin.json",
+      "plugin/*.*"
+    ]
+  }
+}

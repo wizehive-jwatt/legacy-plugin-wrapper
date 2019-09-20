@@ -15,6 +15,7 @@ client.start();
  */
 ;(function (plugin) {
   var _controllers = {};
+  let _context = null;
 
   plugin.controller = function (name, locals) {
     if (locals) {
@@ -41,28 +42,50 @@ client.start();
     return plugin;
   };
 
+  plugin.filter = function (name, locals) {
+    angular.module('wizehive').filter(name, locals);
+    return plugin;
+  };''
+
+  plugin.constant = function (name, locals) {
+    angular.module('wizehive').constant(name, locals);
+    return plugin;
+  };
+
+  plugin.factory = function (name, locals) {
+    angular.module('wizehive').factory(name, locals);
+    return plugin;
+  };
+
   plugin.register = async function (pluginName, settings) {
     if (!angular.isObject(settings)) {
       throw new Error('Plugin registration settings must be an object')
     }
 
-    const data = await client.call('context', null, null, 60000);
+    _context = await client.call({ method: 'context' })
 
-    const currentInterface = settings.interfaces &&
-      settings.interfaces.find(iface => data.pluginView && iface && iface.type === data.pluginView.type);
+    let currentInterface = (settings.interfaces &&
+      settings.interfaces.find(iface => _context.pluginView && iface && iface.type === _context.pluginView.type)) || settings;
 
-    if (!currentInterface) {
+
+
+    if (!currentInterface || !currentInterface.template || !currentInterface.controller) {
       throw new Error('Unable to identify plugin interface')
     }
 
-    plugin.compileProvider.directive('plugin', function () {
+    plugin.compileProvider.directive('plugin', ['$rootScope', function ($rootScope) {
       return {
         restrict: 'A',
         scope: {},
+        link: function() {
+          angular.forEach(_context, (value, key) => {
+            $rootScope[key] = value;
+          });
+        },
         controller: currentInterface.controller,
         templateUrl: currentInterface.template
       }
-    })
+    }])
 
     // Code inspired by: https://code.angularjs.org/1.2.21/docs/api/ng/function/angular.injector
     const pluginDiv = angular.element('<div plugin></div>');
@@ -84,12 +107,12 @@ client.start();
     // 'ng-showdown',
     // 'angularjs-dropdown-multiselect',
     // 'ui.select2',
-    // 'ui.select',
+     'ui.select',
     // 'ui.ace',
-    // 'ui.sortable',
-    // 'ui.bootstrap',
-    // 'ui.tinymce',
-    // 'firebase'
+     'ui.sortable',
+     'ui.bootstrap',
+     'ui.tinymce',
+     'firebase'
   ])
     .config(['$compileProvider', function ($compileProvider) {
       plugin.compileProvider = $compileProvider;
@@ -97,7 +120,7 @@ client.start();
     .service('znData', [function () {
       return function znData (resourceName) {
         function shipItViaPostMessage (params, body, optionalCB) {
-          return client.call(resourceName, params, body, optionalCB)
+          // return client.call(resourceName, params, body, optionalCB)
         }
 
         return {
@@ -112,25 +135,33 @@ client.start();
     }])
     .service('znMessage', [function () {
       console.log('zn message')
-      return {}
+      return function (msg, type, duration) {
+        return client.call({ method: 'znMessage', args: {msg, type, duration} })
+      }
     }])
-    .service('$location', [function () {
-      $location.port = function () {
-        return specialData.port
+    .service('znWindow', ['$window', function ($window) {
+
+      var znWindow = this;
+
+      // Pass through open method
+      znWindow.open = function(strUrl, strWindowName, strWindowFeatures) {
+        strWindowName = strWindowName || null;
+        strWindowFeatures = strWindowFeatures || null;
+
+        return $window.open(strUrl, strWindowName, strWindowFeatures);
       }
 
-      $location.url = function (arg) {
-        if (arg) {
-          specialData.url = arg
-          return client.call('location')
+      znWindow.location = {
+        reload: function(force) {
+          return client.call({ method: 'location', args: {method: 'reload', args: []} })
         }
-
-        return specialData.url
       }
+
     }])
     .service('$routeParams', [function () {
-      return { workspace_id: 1 }
-    }]);
+      return _context.location.pathParams
+    }])
+
 })(plugin);
 
 export default plugin

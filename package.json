@@ -1,8 +1,7 @@
 {
-  "name": "zengine-plugin-migrator",
+  "name": "legacy-plugin-wrapper",
   "version": "0.0.1",
   "description": "Zengine v1 plugin wrapper for migrating to v2 environment",
-  "main": "index.js",
   "scripts": {
     "start": "parcel serve wrapper/index.html --https"
   },
@@ -24,9 +23,9 @@
   "homepage": "https://github.com/Wizehive/zengine-plugin-migrator#readme",
   "devDependencies": {
     "parcel-bundler": "^1.12.3",
-    "parcel-plugin-zengine-migrator": "github:Wizehive/parcel-plugin-zengine-migrator"
+    "parcel-plugin-zengine-migrator": "github:ZengineHQ/parcel-plugin-zengine-migrator"
   },
   "dependencies": {
-    "@zenginehq/post-rpc-client": "^0.7.1"
+    "@zenginehq/post-rpc-client": "^0.8.0"
   }
 }

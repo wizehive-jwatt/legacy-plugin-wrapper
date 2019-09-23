@@ -1,7 +1,7 @@
-node_modules
-dist
 .cache
 .legacy-output
-plugin.json
 .vscode
+dist
+node_modules
 package-lock.json
+plugin.json

@@ -26,6 +26,9 @@
     "parcel-plugin-zengine-migrator": "github:ZengineHQ/parcel-plugin-zengine-migrator"
   },
   "dependencies": {
-    "@zenginehq/post-rpc-client": "^0.8.0"
+    "@zenginehq/post-rpc-client": "^0.8.0",
+    "bignumber.js": "^2.4.0",
+    "moment": "^2.8.3",
+    "tinymce": "^4.2.2"
   }
 }

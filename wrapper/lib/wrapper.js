@@ -161,7 +161,49 @@ client.start();
     .service('$routeParams', [function () {
       return _context.location.pathParams
     }])
+    .service('$location', [function () {
+      const znLocation = _context.location
+      const locationAsync = (method, args) => {
+        args = args || []
+        return client.call({ method: 'location', args: { method, args } })
+      }
 
-})(plugin);
+      return {
+        host: () => { return znLocation.host },
+        protocol: () => { return znLocation.protocol },
+        port: () => { return znLocation.port },
+        absUrl: () => { return znLocation.href },
+        hash: (...args) => {
+          if (args.length) {
+            locationAsync('hash', args)
+          } else {
+            return znLocation.hash
+          }
+        },
+        search: (...args) => {
+          if (args.length) {
+            locationAsync('searchParams', args)
+          } else {
+            return znLocation.searchParams
+          }
+        },
+        url: (...args) => {
+          if (args.length) {
+            locationAsync('navigate', args)
+          } else {
+            var index = znLocation.href.indexOf(znLocation.pathname)
+            return znLocation.href.substr(index, znLocation.href.length)
+          }
+        },
+        path: (...args) => {
+          if (args.length) {
+            locationAsync('navigate', args)
+          } else {
+            return znLocation.pathname
+          }
+        }
+      }
+    }])
+})(plugin)
 
 export default plugin

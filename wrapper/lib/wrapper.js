@@ -157,7 +157,7 @@ client.start()
       }
     }])
     .service('$routeParams', [function () {
-      return _context.location.pathParams
+      return angular.extend({}, _context.location.pathParams, _context.location.searchParams)
     }])
     .service('$location', [function () {
       const znLocation = _context.location

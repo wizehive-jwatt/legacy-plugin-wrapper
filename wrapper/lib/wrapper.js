@@ -104,7 +104,7 @@ client.start()
   angular.module('wizehive', [
     // 'ngSanitize',
     // 'ngGrid',
-    // 'ng-showdown',
+    'ng-showdown',
     // 'angularjs-dropdown-multiselect',
     // 'ui.select2',
     'ui.select',

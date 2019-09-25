@@ -117,19 +117,17 @@ client.start()
     .config(['$compileProvider', function ($compileProvider) {
       plugin.compileProvider = $compileProvider
     }])
-    .service('znData', [function () {
-      return function znData (resourceName) {
-        function shipItViaPostMessage (params, body, optionalCB) {
-          // return client.call(resourceName, params, body, optionalCB)
+    .service('znPluginEvents', ['$rootScope', function ($rootScope) {
+      return function znPluginEvents (pluginName) {
+        function subscribe (event, optionalCB) {
+          return client.subscribe(event, optionalCB)
         }
 
+        var scope = $rootScope.$new(true)
+
         return {
-          get: shipItViaPostMessage,
-          post: shipItViaPostMessage,
-          put: shipItViaPostMessage,
-          save: shipItViaPostMessage,
-          query: shipItViaPostMessage,
-          otherMethodsMaybe: shipItViaPostMessage
+          $id: scope.$id,
+          $on: subscribe
         }
       }
     }])

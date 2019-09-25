@@ -3,6 +3,14 @@ import Client from '@zenginehq/post-rpc-client'
 
 var plugin = {}
 
+Function.prototype.curry = Function.prototype.curry || function () {
+  const fn = this
+  const args = Array.prototype.slice.call(arguments)
+  return function () {
+    return fn.apply(this, args.concat(Array.prototype.slice.call(arguments)))
+  }
+}
+
 const client = new Client(document.location.ancestorOrigins[0])
 client.start()
 

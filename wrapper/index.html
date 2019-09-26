@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="wizehive">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,13 @@
   <link rel="stylesheet" href="plugin.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.21/angular.min.js"></script>
   <script src="../vendor/ui-bootstrap.min.js"></script>
-  <script src="../vendor/handlebars.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/firebase/firebase-bower@1.0.17/firebase.js"></script>
+  <script src="https://github.com/firebase/angularfire/releases/download/v0.8.0/angularfire.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment-with-locales.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.4.0/bignumber.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.2.2/tinymce.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-tinymce/0.0.9/tinymce.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js"></script>
   <!-- bootstrap-datepicker.js -->
   <!-- bootstrap-datetimepicker.js -->
   <!-- bootstrap.js -->
@@ -19,7 +26,9 @@
   <script src="../vendor/validators.js"></script>
   <script src="plugin.js"></script>
 </head>
+
 <body>
-%PLUGIN_HTML%
+  %PLUGIN_HTML%
 </body>
+
 </html>

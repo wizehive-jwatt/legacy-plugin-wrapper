@@ -1,5 +1,5 @@
 export function ZnData (plugin) {
-  plugin.factory('znData', [function () {
+  plugin.factory('znData', ['$q', function ($q) {
     /**
      * Throw an error when an unsupported method on a particular resource is called
      *
@@ -266,21 +266,26 @@ export function ZnData (plugin) {
         return resourceData
       }
 
+      const deferred = $q.defer()
+
       const callback = (err, result) => {
         if (err && errorCb) {
+          deferred.reject(err)
           errorCb(err)
         }
 
         const resp = result.data
         const resourceData = formatResponse(resp)
 
-        return successCb(resourceData, {
+        successCb(resourceData, {
           status: resp.status,
           code: resp.code,
           totalCount: resp.totalCount,
           limit: resp.limit,
           offset: resp.offset
         }, result.headers)
+
+        deferred.resolve(resourceData)
       }
 
       const multipart = data ? data.multipart : null
@@ -310,6 +315,8 @@ export function ZnData (plugin) {
           return formatResponse(result.data)
         })
       }
+
+      return deferred.promise
     }
 
     return function (name) {

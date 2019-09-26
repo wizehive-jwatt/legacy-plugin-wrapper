@@ -127,21 +127,27 @@ client.start()
       plugin.compileProvider = $compileProvider
     }])
     .service('znPluginEvents', ['$rootScope', function ($rootScope) {
-      return function znPluginEvents (pluginName) {
-        function subscribe (event, optionalCB) {
-          return client.subscribe(event, optionalCB)
+      function subscribe (event, optionalCB) {
+        if (event === 'form-record-synchronized') {
+          event = 'zn-data-form-records-saved'
         }
 
-        var scope = $rootScope.$new(true)
+        client.subscribe(event, optionalCB)
+        return angular.noop // dummy deregister function
+      }
 
-        return {
-          $id: scope.$id,
-          $on: subscribe
-        }
+      var scope = $rootScope.$new(true)
+
+      return {
+        $id: scope.$id,
+        $on: subscribe,
+        $emit: scope.$emit,
+        $broadcast: scope.$broadcast,
+        $$listeners: scope.$$listeners,
+        $$listenerCount: scope.$$listenerCount
       }
     }])
     .service('znMessage', [function () {
-      console.log('zn message')
       return function (msg, type, duration) {
         return client.call({ method: 'znMessage', args: { msg, type, duration } })
       }

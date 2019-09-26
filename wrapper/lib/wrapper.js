@@ -1,4 +1,5 @@
 import '@babel/polyfill'
+import ZnFilterMatcher from 'zn-filter-matcher'
 import Client from '@zenginehq/post-rpc-client'
 
 var plugin = {}
@@ -144,6 +145,9 @@ client.start()
       return function (msg, type, duration) {
         return client.call({ method: 'znMessage', args: { msg, type, duration } })
       }
+    }])
+    .service('znFilterMatcher', [function () {
+      return ZnFilterMatcher
     }])
     .service('znWindow', ['$window', function ($window) {
       var znWindow = this

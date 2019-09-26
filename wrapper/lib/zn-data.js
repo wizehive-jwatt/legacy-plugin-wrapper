@@ -1,0 +1,314 @@
+export function ZnData (plugin) {
+  plugin.factory('znData', [function () {
+    /**
+       * Throw an error when an unsupported method on a particular resource is called
+       *
+       * @param   {string}  method - method name
+       * @returns {function}
+       *
+       */
+    function unsupportedMethod (method) {
+      return function () {
+        throw new Error('Method "' + method + '" is not supported by this resource')
+      }
+    }
+
+    const _resources = {
+      Activities: ['/activities/:id'],
+      AppTemplates: ['/app_templates/:id'],
+      AppTemplateInstallJobs: ['/app_template_install_jobs/:id'],
+      BinaryExportBatch: ['/binary_export_jobs/:binaryExportJobId/batches/:id', 'binaryExportJobId'],
+      BinaryExportJob: ['/binary_export_jobs/:id'],
+      Calculate: (function () {
+        var _resource = resource('Calculate', '/calculate')
+        var ret = {}
+        // query uses POST to send request to API
+        ret.query = function (params, success, error) {
+          return _resource.save({}, params, success, error)
+        }
+        // No other methods supported for this verb endpoint
+        for (var method in _resource) {
+          ret[method] = ret[method] || unsupportedMethod(method)
+        }
+
+        return ret
+      })(),
+      CalculationSettings: ['/calculation_settings/:id'],
+      DataViews: ['/data_views/:id'],
+      Events: ['/events/:id'],
+      Files: ['/files/:id'],
+      Forms: ['/forms/:id', null, {
+        objectVersionField: 'objectVersion'
+      }],
+      DefaultFormPermissions: ['/forms/permissions', null, {
+        objectVersionField: 'objectVersion'
+      }],
+      FormRecordPermissions: ['/forms/:formId/records/permissions', 'formId', {
+        objectVersionField: 'objectVersion'
+      }],
+      FormFields: ['/forms/:formId/fields/:id'],
+      FormFolders: ['/forms/:formId/folders/:id'],
+      FormGroups: ['/form_groups/:id'],
+      FormRecords: ['/forms/:formId/records/:id', null, {
+        objectVersionField: 'objectVersion'
+      }],
+      FormUploads: ['/forms/:formId/uploads', null, {
+        multipartKey: 'file'
+      }],
+      FormFieldTaxonomy: ['/form_field_taxonomy'],
+      RecordImportJobs: ['/record_import_jobs/:id'],
+      RecordExportJobs: ['/record_export_jobs/:id', null],
+      RecordImportFiles: ['/record_import_files/:id', null, {
+        multipartKey: 'file'
+      }],
+      Roles: ['/workspaces/:workspaceId/roles/:id'],
+      Notes: ['/notes/:id'],
+      NoteReplies: ['/notes/:noteId/replies/:id'],
+      Notifications: ['/notifications/:id'],
+      NotificationEmails: ['/notification_emails/:id'],
+      Tasks: ['/tasks/:id'],
+      TaskLists: ['/task_lists/:id'],
+      TaskPriorities: ['/task_priorities'],
+      TaskStatuses: ['/task_statuses'],
+      Users: ['/users/:id'],
+      TaskPreferences: ['/users/:userId/task_preferences', 'userId'],
+      Webhooks: ['/webhooks/:id'],
+      ScheduledWebhooks: ['/scheduled_webhooks/:id'],
+      WebhookEvents: ['/webhook_events/:id'],
+      Workspaces: ['/workspaces/:id'],
+      WorkspaceInvitees: ['/workspaces/:workspaceId/invitees/:id'],
+      WorkspaceMembers: ['/workspaces/:workspaceId/members/:id'],
+      WorkspaceTransferRequests: ['/workspaces/:workspaceId/transfer_requests/:id'],
+      WorkspaceTaskPreferences: ['/workspaces/:workspaceId/members/:memberId/task_preferences', 'memberId'],
+      WorkspaceLogo: ['/workspaces/:workspaceId/logo', null, {
+        multipartKey: 'logo'
+      }],
+      WorkspaceCopyJobs: ['/workspace_copy_jobs'],
+      Countries: ['/countries'],
+      States: ['/states'],
+      Subscriptions: ['/subscriptions/:id'],
+      Plugins: ['/plugins/:id', null, {
+        objectVersionField: 'objectVersion'
+      }],
+      PluginUploads: ['/plugins/:pluginId/uploads', null, {
+        multipartKey: 'draftSource'
+      }],
+      PluginScreenshots: ['/plugins/:pluginId/screenshots'],
+      PluginServices: ['/plugins/:pluginId/services/:id'],
+      PluginServiceUploads: ['/plugins/:pluginId/services/:serviceId/uploads', null, {
+        multipartKey: 'draftSource'
+      }],
+      WorkspacePluginLinks: ['/workspace_plugin_links/:id'],
+      Organizations: ['/organizations/:id'],
+      OrganizationsAuthProviders: ['/organizations/:organizationId/auth_providers/:id'],
+      AuthProviders: ['/auth_providers/:id']
+    }
+
+    /**
+       * Build a set of resource functions
+       *
+       * @param  string    path
+       * @param  [string]  idField
+       * @param  object    options - multipart, objectVersion
+       */
+    function resource (name, path, idField, options) {
+      idField = idField || 'id'
+
+      var regex = new RegExp(':([a-z]+)', 'ig')
+      var pathParams = path.match(regex)
+
+      var save = function (params, data, success, error) {
+        if (typeof data === 'function') {
+          error = success
+          success = data
+          data = params
+          params = {}
+        } else if (typeof data === 'undefined') {
+          data = params
+          params = {}
+        }
+
+        // These query params names will be used to check whether or not params as field attributes
+        // if true will use `update` action rather then `create`.
+        var updateActionWhitelist = ['timezone', 'limit', 'sort', 'page', 'direction', 'access_token', 'validate_only']
+
+        // Set whether it's an update or create
+        var method = 'post'
+
+        var idFieldValue = params[idField] || data[idField]
+
+        var isMultiIdField = (typeof idFieldValue === 'string' && idFieldValue.indexOf('|') !== -1)
+
+        var hasBatchConditions = false
+
+        function inPathParams (param) {
+          return pathParams && pathParams.indexOf(':' + param) !== -1
+        }
+
+        if (idFieldValue) {
+          method = 'put'
+
+          if (isMultiIdField) {
+            path = path.substring(0, path.length - idField.length - 1)
+          }
+        } else if (params) {
+          angular.forEach(params, function (value, key) {
+            // Ignore param if it's a reserved param or a path param
+            if (updateActionWhitelist.indexOf(key) === -1 && !inPathParams(key)) {
+              hasBatchConditions = true
+            }
+          })
+
+          if (hasBatchConditions) {
+            method = 'put'
+          }
+        }
+
+        // Set wheter it's a bulk or single operation
+        if (angular.isArray(data) || isMultiIdField || hasBatchConditions) {
+          action += 'All'
+        }
+
+        // I think this logic is faulty...
+        if (action === 'update' && typeof params[idField] === 'undefined') {
+          params[idField] = data[idField]
+        }
+
+        if ((action === 'update' || action === 'updateAll') &&
+                      options && options.objectVersionField && params[options.objectVersionField]
+        ) {
+          // Set currentObjectVersion to be used for headers, and remove from query params
+          currentObjectVersion = params[options.objectVersionField]
+          delete params[options.objectVersionField]
+        }
+
+        // Transform multipart form data for file uploads
+        if (options && options.multipartKey) {
+          const key = options.multipartKey
+
+          actions.create.multipart = actions.update.multipart = {
+            key: key,
+            file: data[key]
+          }
+        }
+
+        // Clear currentObjectVersion if it has been set before returning so it doesn't affect any other requests
+        currentObjectVersion = null
+
+        return request(path, pathParams, method, params, data, success, error)
+      }
+
+      let queryPath = path
+
+      // Remove ID param from `query` path, Use `query` for `index` and `get` for `view`
+      if (path.substring(path.length - idField.length - 1) === ':' + idField) {
+        queryPath = path.substring(0, path.length - idField.length - 1)
+      }
+
+      return {
+        get: request.curry(path, pathParams, 'get'),
+        query: request.curry(queryPath, pathParams, 'get'),
+        count: function (params, success, error) {
+          return request(path + '/count', 'get', params, success, error)
+        },
+        update: request.curry(path, pathParams, 'put'),
+        updateAll: save,
+        save: save,
+        saveAll: save,
+        delete: request.curry(path, pathParams, 'delete'),
+        deleteAll: function (params, pathParams, success, error) {
+          path = path.substring(0, path.length - idField.length - 1)
+          return request(path, pathParams, 'delete', params, success, error)
+        },
+        del: request.curry(path, pathParams, 'delete'),
+        remove: request.curry(path, pathParams, 'delete')
+      }
+    }
+
+    function request (path, pathParams, method, params, data, successCb, errorCb) {
+      if (typeof params === 'function') {
+        errorCb = data
+        successCb = params
+        data = {}
+        params = {}
+      } else if (typeof data === 'function') {
+        errorCb = successCb
+        successCb = data
+        data = {}
+      }
+
+      let url = path
+
+      angular.forEach(pathParams, pathParam => {
+        const param = pathParam.replace(':', '')
+
+        if (params[param]) {
+          url = url.replace(pathParam, params[param])
+        } else {
+          url = url.replace(pathParam, '')
+        }
+        delete params[param]
+      })
+
+      const callback = (err, result) => {
+        if (err && errorCb) {
+          errorCb(err)
+        }
+
+        var resp = result.data
+        var resourceData = []
+
+        if (angular.isArray(resp)) {
+          resourceData = JSON.parse(angular.toJson(resp))
+        }
+
+        if (resp.data) {
+          resourceData = resp.data
+        }
+
+        return successCb(resourceData, {
+          status: resp.status,
+          code: resp.code,
+          totalCount: resp.totalCount,
+          limit: resp.limit,
+          offset: resp.offset
+        }, result.headers)
+      }
+
+      return plugin.client.call({
+        method: 'znHttp',
+        timeout: 60000,
+        callback: successCb ? callback : null,
+        args: {
+          options: { apiVersion: 'v1' },
+          request: {
+            method,
+            url,
+            data,
+            params
+          }
+        }
+      })
+    }
+
+    return function (name) {
+      if (!(name in _resources)) {
+        throw new Error("Resource '" + name + "' doesn't exist.")
+      }
+
+      if (name === 'Calculate') {
+        return _resources[name]
+      }
+
+      var args = _resources[name]
+      // add resource name to list of arguments if not already present
+      if (args[0] !== name) {
+        args.unshift(name)
+      }
+
+      return resource.apply(this, args)
+    }
+  }
+
+  ])
+}

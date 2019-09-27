@@ -148,8 +148,13 @@ client.start()
       }
     }])
     .service('znMessage', [function () {
-      return function (msg, type, duration) {
-        return client.call({ method: 'znMessage', args: { msg, type, duration } })
+      return function (message, type, duration) {
+        return client.call({
+          method: 'message',
+          args: {
+            params: { message, type, duration }
+          }
+        })
       }
     }])
     .service('znFilterMatcher', [function () {

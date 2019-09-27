@@ -1,5 +1,5 @@
 export function ZnData (plugin) {
-  plugin.factory('znData', [function () {
+  plugin.factory('znData', ['$q', function ($q) {
     /**
      * Throw an error when an unsupported method on a particular resource is called
      *
@@ -175,20 +175,9 @@ export function ZnData (plugin) {
 
         // Set wheter it's a bulk or single operation
         if (angular.isArray(data) || isMultiIdField || hasBatchConditions) {
-          action += 'All'
-        }
 
-        // I think this logic is faulty...
-        if (action === 'update' && typeof params[idField] === 'undefined') {
+        } else if (method === 'put' && typeof params[idField] === 'undefined') {
           params[idField] = data[idField]
-        }
-
-        if ((action === 'update' || action === 'updateAll') &&
-                    options && options.objectVersionField && params[options.objectVersionField]
-        ) {
-          // Set currentObjectVersion to be used for headers, and remove from query params
-          currentObjectVersion = params[options.objectVersionField]
-          delete params[options.objectVersionField]
         }
 
         // Transform multipart form data for file uploads
@@ -201,32 +190,33 @@ export function ZnData (plugin) {
           }
         }
 
-        // Clear currentObjectVersion if it has been set before returning so it doesn't affect any other requests
-        currentObjectVersion = null
+        const objectVersionField = options.objectVersionField
 
-        return request(path, pathParams, method, params, data, success, error)
+        return request(path, { pathParams, objectVersionField }, method, params, data, success, error)
       }
 
       return {
-        get: request.curry(path, pathParams, 'get'),
-        query: request.curry(idRemovedPath, pathParams, 'get'),
+        get: request.curry(path, { pathParams }, 'get'),
+        query: request.curry(idRemovedPath, { pathParams }, 'get'),
         count: function (params, success, error) {
-          return request(idRemovedPath + '/count', pathParams, 'get', params, success, error)
+          return request(idRemovedPath + '/count', { pathParams }, 'get', params, success, error)
         },
-        update: request.curry(path, pathParams, 'put'),
+        update: request.curry(path, { pathParams }, 'put'),
         updateAll: save,
         save: save,
         saveAll: save,
-        delete: request.curry(path, pathParams, 'delete'),
+        delete: request.curry(path, { pathParams }, 'delete'),
         deleteAll: function (params, success, error) {
-          return request(idRemovedPath, pathParams, 'delete', params, success, error)
+          return request(idRemovedPath, { pathParams }, 'delete', params, success, error)
         },
-        del: request.curry(path, pathParams, 'delete'),
-        remove: request.curry(path, pathParams, 'delete')
+        del: request.curry(path, { pathParams }, 'delete'),
+        remove: request.curry(path, { pathParams }, 'delete')
       }
     }
 
-    function request (path, pathParams, method, params, data, successCb, errorCb) {
+    function request (path, options, method, params, data, successCb, errorCb) {
+      const { pathParams, objectVersionField } = options
+
       if (typeof params === 'function') {
         errorCb = data
         successCb = params
@@ -252,7 +242,38 @@ export function ZnData (plugin) {
         delete params[param]
       })
 
-      const formatResponse = (resp) => {
+      const multipart = data ? data.multipart : null
+
+      if (data) {
+        delete data.multipart
+      }
+
+      const headers = {}
+
+      if (method === 'put' && objectVersionField && params[objectVersionField]) {
+        // Set currentObjectVersion to be used for headers, and remove from query params
+        headers['X-If-ObjectVersion-Matches'] = params[options.objectVersionField]
+        delete params[objectVersionField]
+      }
+      var deferred = $q.defer()
+
+      plugin.client.call({
+        method: 'znHttp',
+        timeout: 60000,
+        args: {
+          options: { apiVersion: 'v1' },
+          request: {
+            method,
+            url,
+            data,
+            params,
+            headers,
+            multipart
+          }
+        }
+      }).then(result => {
+        const resp = result.data
+
         let resourceData = []
 
         if (angular.isArray(resp)) {
@@ -263,53 +284,26 @@ export function ZnData (plugin) {
           resourceData = resp.data
         }
 
-        return resourceData
-      }
-
-      const callback = (err, result) => {
-        if (err && errorCb) {
-          errorCb(err)
+        if (successCb) {
+          successCb(resourceData, {
+            status: resp.status,
+            code: resp.code,
+            totalCount: resp.totalCount,
+            limit: resp.limit,
+            offset: resp.offset
+          }, result.headers)
         }
 
-        const resp = result.data
-        const resourceData = formatResponse(resp)
-
-        return successCb(resourceData, {
-          status: resp.status,
-          code: resp.code,
-          totalCount: resp.totalCount,
-          limit: resp.limit,
-          offset: resp.offset
-        }, result.headers)
-      }
-
-      const multipart = data ? data.multipart : null
-
-      if (data) {
-        delete data.multipart
-      }
-
-      const promise = plugin.client.call({
-        method: 'znHttp',
-        timeout: 60000,
-        callback: successCb ? callback : null,
-        args: {
-          options: { apiVersion: 'v1' },
-          request: {
-            method,
-            url,
-            data,
-            params,
-            multipart
-          }
+        deferred.resolve(resourceData)
+      }).catch(err => {
+        if (errorCb) {
+          errorCb(err.data)
         }
+
+        deferred.reject(err.data)
       })
 
-      if (!successCb) {
-        return promise.then((result) => {
-          return formatResponse(result.data)
-        })
-      }
+      return deferred.promise
     }
 
     return function (name) {

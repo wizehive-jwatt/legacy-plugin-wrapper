@@ -97,13 +97,13 @@ client.start()
     }])
 
     // Code inspired by: https://code.angularjs.org/1.2.21/docs/api/ng/function/angular.injector
-    const pluginDiv = angular.element('<div plugin></div>')
+    const pluginDiv = angular.element('<div plugin ng-class="type"></div>')
 
     angular.element(document.body).append(pluginDiv)
 
     angular.element(document).injector().invoke(function ($compile) {
       var scope = angular.element(pluginDiv).scope()
-
+      scope.type = context.pluginView.type
       $compile(pluginDiv)(scope)
     })
 

@@ -149,12 +149,45 @@ client.start()
     }])
     .service('znMessage', [function () {
       return function (message, type, duration) {
-        return client.call({
-          method: 'message',
-          args: {
-            params: { message, type, duration }
+        return client.call({ method: 'message', args: { params: { message, type, duration } } })
+      }
+    }])
+    .service('znPluginData', [function () {
+      return function (namespace) {
+        if (namespace === 'wgn') {
+          namespace = context.plugin.namespace
+        }
+
+        function request (method, route, options, data, successCb, errorCb) {
+          if (data) {
+            options.data = data
           }
-        })
+
+          const callback = (error, result) => {
+            if (error && errorCb) {
+              return errorCb(error)
+            }
+            successCb(result)
+          }
+
+          return client.call({
+            method: 'znPluginData',
+            callback: successCb ? callback : null,
+            args: {
+              namespace,
+              method,
+              route,
+              options
+            }
+          })
+        }
+
+        return {
+          get: request.curry('get'),
+          post: request.curry('post'),
+          put: request.curry('put'),
+          delete: request.curry('delete')
+        }
       }
     }])
     .service('znFilterMatcher', [function () {

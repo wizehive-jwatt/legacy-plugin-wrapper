@@ -271,7 +271,7 @@ export function ZnData (plugin) {
       const callback = (err, result) => {
         if (err && errorCb) {
           deferred.reject(err)
-          errorCb(err)
+          return errorCb(err)
         }
 
         const resp = result.data

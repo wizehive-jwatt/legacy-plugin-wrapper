@@ -23,23 +23,23 @@ client.start()
  * @since 0.x.x
  */
 ;(function (plugin) {
-  var _controllers = {}
-  let _context = null
+  const controllers = {}
+  let context = null
 
   plugin.client = client
 
   plugin.controller = function (name, locals) {
     if (locals) {
-      if (name in _controllers) {
+      if (name in controllers) {
         throw new Error('Duplicate Controller name: ' + name)
       }
 
-      _controllers[name] = locals
+      controllers[name] = locals
       angular.module('wizehive').controller(name, locals)
 
       return plugin
     } else {
-      return _controllers[name]
+      return controllers[name]
     }
   }
 
@@ -73,10 +73,10 @@ client.start()
       throw new Error('Plugin registration settings must be an object')
     }
 
-    _context = await client.call({ method: 'context' })
+    context = await client.call({ method: 'context' })
 
     const currentInterface = (settings.interfaces &&
-      settings.interfaces.find(iface => _context.pluginView && iface && iface.type === _context.pluginView.type)) || settings
+      settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
 
     if (!currentInterface || !currentInterface.template || !currentInterface.controller) {
       throw new Error('Unable to identify plugin interface')
@@ -87,7 +87,7 @@ client.start()
         restrict: 'A',
         scope: {},
         link: function () {
-          angular.forEach(_context, (value, key) => {
+          angular.forEach(context, (value, key) => {
             $rootScope[key] = value
           })
         },
@@ -178,10 +178,10 @@ client.start()
       }
     }])
     .service('$routeParams', [function () {
-      return angular.extend({}, _context.location.pathParams, _context.location.searchParams)
+      return angular.extend({}, context.location.pathParams, context.location.searchParams)
     }])
     .service('$location', [function () {
-      const znLocation = _context.location
+      const znLocation = context.location
       const locationAsync = (method, args) => {
         args = args || []
         return client.call({ method: 'location', args: { method, args } })

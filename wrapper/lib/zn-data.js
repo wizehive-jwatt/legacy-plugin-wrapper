@@ -242,42 +242,6 @@ export function ZnData (plugin) {
         delete params[param]
       })
 
-      const formatResponse = (resp) => {
-        let resourceData = []
-
-        if (angular.isArray(resp)) {
-          resourceData = JSON.parse(angular.toJson(resp))
-        }
-
-        if (resp.data) {
-          resourceData = resp.data
-        }
-
-        return resourceData
-      }
-
-      const deferred = $q.defer()
-
-      const callback = (err, result) => {
-        if (err && errorCb) {
-          deferred.reject(err)
-          return errorCb(err)
-        }
-
-        const resp = result.data
-        const resourceData = formatResponse(resp)
-
-        successCb(resourceData, {
-          status: resp.status,
-          code: resp.code,
-          totalCount: resp.totalCount,
-          limit: resp.limit,
-          offset: resp.offset
-        }, result.headers)
-
-        deferred.resolve(resourceData)
-      }
-
       const multipart = data ? data.multipart : null
 
       if (data) {
@@ -307,13 +271,37 @@ export function ZnData (plugin) {
             multipart
           }
         }
-      })
+      }).then(result => {
+        const resp = result.data
 
-      if (!successCb) {
-        return promise.then((result) => {
-          return formatResponse(result.data)
-        })
-      }
+        let resourceData = []
+
+        if (angular.isArray(resp)) {
+          resourceData = JSON.parse(angular.toJson(resp))
+        }
+
+        if (resp.data) {
+          resourceData = resp.data
+        }
+
+        if (successCb) {
+          successCb(resourceData, {
+            status: resp.status,
+            code: resp.code,
+            totalCount: resp.totalCount,
+            limit: resp.limit,
+            offset: resp.offset
+          }, result.headers)
+        }
+
+        deferred.resolve(resourceData)
+      }).catch(err => {
+        if (errorCb) {
+          errorCb(err.data)
+        }
+
+        deferred.reject(err.data)
+      })
 
       return deferred.promise
     }

@@ -75,6 +75,8 @@ client.start()
 
     context = await client.call({ method: 'context' })
 
+    plugin.namespace = context.plugin.namespace
+
     const currentInterface = (settings.interfaces &&
       settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
 

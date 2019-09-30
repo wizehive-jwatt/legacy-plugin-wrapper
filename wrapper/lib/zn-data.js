@@ -1,12 +1,12 @@
 export function ZnData (plugin) {
-  plugin.factory('znData', [function () {
+  plugin.factory('znData', ['$q', function ($q) {
     /**
-       * Throw an error when an unsupported method on a particular resource is called
-       *
-       * @param   {string}  method - method name
-       * @returns {function}
-       *
-       */
+     * Throw an error when an unsupported method on a particular resource is called
+     *
+     * @param   {string}  method - method name
+     * @returns {function}
+     *
+     */
     function unsupportedMethod (method) {
       return function () {
         throw new Error('Method "' + method + '" is not supported by this resource')
@@ -105,17 +105,22 @@ export function ZnData (plugin) {
     }
 
     /**
-       * Build a set of resource functions
-       *
-       * @param  string    path
-       * @param  [string]  idField
-       * @param  object    options - multipart, objectVersion
-       */
+     * Build a set of resource functions
+     *
+     * @param  string    path
+     * @param  [string]  idField
+     * @param  object    options - multipart, objectVersion
+     */
     function resource (name, path, idField, options) {
       idField = idField || 'id'
 
-      var regex = new RegExp(':([a-z]+)', 'ig')
-      var pathParams = path.match(regex)
+      const regex = new RegExp(':([a-z]+)', 'ig')
+      const pathParams = path.match(regex)
+
+      let idRemovedPath = path
+      if (path.substring(path.length - idField.length - 1) === ':' + idField) {
+        idRemovedPath = path.substring(0, path.length - idField.length - 1)
+      }
 
       var save = function (params, data, success, error) {
         if (typeof data === 'function') {
@@ -149,83 +154,69 @@ export function ZnData (plugin) {
           method = 'put'
 
           if (isMultiIdField) {
-            path = path.substring(0, path.length - idField.length - 1)
+            path = idRemovedPath
           }
-        } else if (params) {
-          angular.forEach(params, function (value, key) {
-            // Ignore param if it's a reserved param or a path param
-            if (updateActionWhitelist.indexOf(key) === -1 && !inPathParams(key)) {
-              hasBatchConditions = true
-            }
-          })
+        } else {
+          path = idRemovedPath
 
-          if (hasBatchConditions) {
-            method = 'put'
+          if (params) {
+            angular.forEach(params, function (value, key) {
+              // Ignore param if it's a reserved param or a path param
+              if (updateActionWhitelist.indexOf(key) === -1 && !inPathParams(key)) {
+                hasBatchConditions = true
+              }
+            })
+
+            if (hasBatchConditions) {
+              method = 'put'
+            }
           }
         }
 
         // Set wheter it's a bulk or single operation
         if (angular.isArray(data) || isMultiIdField || hasBatchConditions) {
-          action += 'All'
-        }
 
-        // I think this logic is faulty...
-        if (action === 'update' && typeof params[idField] === 'undefined') {
+        } else if (method === 'put' && typeof params[idField] === 'undefined') {
           params[idField] = data[idField]
-        }
-
-        if ((action === 'update' || action === 'updateAll') &&
-                      options && options.objectVersionField && params[options.objectVersionField]
-        ) {
-          // Set currentObjectVersion to be used for headers, and remove from query params
-          currentObjectVersion = params[options.objectVersionField]
-          delete params[options.objectVersionField]
         }
 
         // Transform multipart form data for file uploads
         if (options && options.multipartKey) {
           const key = options.multipartKey
 
-          actions.create.multipart = actions.update.multipart = {
+          data.multipart = {
             key: key,
             file: data[key]
           }
         }
 
-        // Clear currentObjectVersion if it has been set before returning so it doesn't affect any other requests
-        currentObjectVersion = null
+        const objectVersionField = options.objectVersionField
 
-        return request(path, pathParams, method, params, data, success, error)
-      }
-
-      let queryPath = path
-
-      // Remove ID param from `query` path, Use `query` for `index` and `get` for `view`
-      if (path.substring(path.length - idField.length - 1) === ':' + idField) {
-        queryPath = path.substring(0, path.length - idField.length - 1)
+        return request(path, { pathParams, objectVersionField }, method, params, data, success, error)
       }
 
       return {
-        get: request.curry(path, pathParams, 'get'),
-        query: request.curry(queryPath, pathParams, 'get'),
+        get: request.curry(path, { pathParams }, 'get'),
+        query: request.curry(idRemovedPath, { pathParams }, 'get'),
         count: function (params, success, error) {
-          return request(path + '/count', 'get', params, success, error)
+          return request(idRemovedPath + '/count', { pathParams }, 'get', params, success, error)
         },
-        update: request.curry(path, pathParams, 'put'),
+        update: request.curry(path, { pathParams }, 'put'),
         updateAll: save,
         save: save,
         saveAll: save,
-        delete: request.curry(path, pathParams, 'delete'),
-        deleteAll: function (params, pathParams, success, error) {
-          path = path.substring(0, path.length - idField.length - 1)
-          return request(path, pathParams, 'delete', params, success, error)
+        delete: request.curry(path, { pathParams }, 'delete'),
+        deleteAll: function (params, success, error) {
+          return request(idRemovedPath, { pathParams }, 'delete', params, success, error)
         },
-        del: request.curry(path, pathParams, 'delete'),
-        remove: request.curry(path, pathParams, 'delete')
+        del: request.curry(path, { pathParams }, 'delete'),
+        remove: request.curry(path, { pathParams }, 'delete')
       }
     }
 
-    function request (path, pathParams, method, params, data, successCb, errorCb) {
+    function request (path, options, method, params, data, successCb, errorCb) {
+      const { pathParams, objectVersionField } = options
+
       if (typeof params === 'function') {
         errorCb = data
         successCb = params
@@ -245,18 +236,45 @@ export function ZnData (plugin) {
         if (params[param]) {
           url = url.replace(pathParam, params[param])
         } else {
-          url = url.replace(pathParam, '')
+          url = url.replace('/' + pathParam, '')
         }
+
         delete params[param]
       })
 
-      const callback = (err, result) => {
-        if (err && errorCb) {
-          errorCb(err)
-        }
+      const multipart = data ? data.multipart : null
 
-        var resp = result.data
-        var resourceData = []
+      if (data) {
+        delete data.multipart
+      }
+
+      const headers = {}
+
+      if (method === 'put' && objectVersionField && params[objectVersionField]) {
+        // Set currentObjectVersion to be used for headers, and remove from query params
+        headers['X-If-ObjectVersion-Matches'] = params[options.objectVersionField]
+        delete params[objectVersionField]
+      }
+      var deferred = $q.defer()
+
+      plugin.client.call({
+        method: 'znHttp',
+        timeout: 60000,
+        args: {
+          options: { apiVersion: 'v1' },
+          request: {
+            method,
+            url,
+            data,
+            params,
+            headers,
+            multipart
+          }
+        }
+      }).then(result => {
+        const resp = result.data
+
+        let resourceData = []
 
         if (angular.isArray(resp)) {
           resourceData = JSON.parse(angular.toJson(resp))
@@ -266,29 +284,26 @@ export function ZnData (plugin) {
           resourceData = resp.data
         }
 
-        return successCb(resourceData, {
-          status: resp.status,
-          code: resp.code,
-          totalCount: resp.totalCount,
-          limit: resp.limit,
-          offset: resp.offset
-        }, result.headers)
-      }
-
-      return plugin.client.call({
-        method: 'znHttp',
-        timeout: 60000,
-        callback: successCb ? callback : null,
-        args: {
-          options: { apiVersion: 'v1' },
-          request: {
-            method,
-            url,
-            data,
-            params
-          }
+        if (successCb) {
+          successCb(resourceData, {
+            status: resp.status,
+            code: resp.code,
+            totalCount: resp.totalCount,
+            limit: resp.limit,
+            offset: resp.offset
+          }, result.headers)
         }
+
+        deferred.resolve(resourceData)
+      }).catch(err => {
+        if (errorCb) {
+          errorCb(err.data)
+        }
+
+        deferred.reject(err.data)
       })
+
+      return deferred.promise
     }
 
     return function (name) {

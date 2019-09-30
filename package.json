@@ -28,6 +28,7 @@
     "sass": "^1.22.12"
   },
   "dependencies": {
-    "@zenginehq/post-rpc-client": "^0.8.0"
+    "@zenginehq/post-rpc-client": "^0.8.0",
+    "zn-filter-matcher": "^1.2.3"
   }
 }

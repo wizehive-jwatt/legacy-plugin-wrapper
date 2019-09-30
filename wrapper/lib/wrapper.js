@@ -1,4 +1,5 @@
 import '@babel/polyfill'
+import ZnFilterMatcher from 'zn-filter-matcher'
 import Client from '@zenginehq/post-rpc-client'
 
 var plugin = {}
@@ -22,7 +23,7 @@ client.start()
  * @since 0.x.x
  */
 ;(function (plugin) {
-  var controllers = {}
+  const controllers = {}
   let context = null
 
   plugin.client = client
@@ -96,13 +97,13 @@ client.start()
     }])
 
     // Code inspired by: https://code.angularjs.org/1.2.21/docs/api/ng/function/angular.injector
-    const pluginDiv = angular.element('<div plugin></div>')
+    const pluginDiv = angular.element('<div plugin ng-class="type"></div>')
 
     angular.element(document.body).append(pluginDiv)
 
     angular.element(document).injector().invoke(function ($compile) {
       var scope = angular.element(pluginDiv).scope()
-
+      scope.type = context.pluginView.type
       $compile(pluginDiv)(scope)
     })
 
@@ -126,24 +127,71 @@ client.start()
       plugin.compileProvider = $compileProvider
     }])
     .service('znPluginEvents', ['$rootScope', function ($rootScope) {
-      return function znPluginEvents (pluginName) {
-        function subscribe (event, optionalCB) {
-          return client.subscribe(event, optionalCB)
+      function subscribe (event, optionalCB) {
+        if (event === 'form-record-synchronized') {
+          event = 'zn-data-form-records-saved'
         }
 
-        var scope = $rootScope.$new(true)
+        client.subscribe(event, optionalCB)
+        return angular.noop // dummy deregister function
+      }
 
-        return {
-          $id: scope.$id,
-          $on: subscribe
-        }
+      var scope = $rootScope.$new(true)
+
+      return {
+        $id: scope.$id,
+        $on: subscribe,
+        $emit: scope.$emit,
+        $broadcast: scope.$broadcast,
+        $$listeners: scope.$$listeners,
+        $$listenerCount: scope.$$listenerCount
       }
     }])
     .service('znMessage', [function () {
-      console.log('zn message')
-      return function (msg, type, duration) {
-        return client.call({ method: 'znMessage', args: { msg, type, duration } })
+      return function (message, type, duration) {
+        return client.call({ method: 'message', args: { params: { message, type, duration } } })
       }
+    }])
+    .service('znPluginData', [function () {
+      return function (namespace) {
+        if (namespace === 'wgn') {
+          namespace = context.plugin.namespace
+        }
+
+        function request (method, route, options, data, successCb, errorCb) {
+          if (data) {
+            options.data = data
+          }
+
+          const callback = (error, result) => {
+            if (error && errorCb) {
+              return errorCb(error)
+            }
+            successCb(result)
+          }
+
+          return client.call({
+            method: 'znPluginData',
+            callback: successCb ? callback : null,
+            args: {
+              namespace,
+              method,
+              route,
+              options
+            }
+          })
+        }
+
+        return {
+          get: request.curry('get'),
+          post: request.curry('post'),
+          put: request.curry('put'),
+          delete: request.curry('delete')
+        }
+      }
+    }])
+    .service('znFilterMatcher', [function () {
+      return ZnFilterMatcher
     }])
     .service('znWindow', ['$window', function ($window) {
       var znWindow = this

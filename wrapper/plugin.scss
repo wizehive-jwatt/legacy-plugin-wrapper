@@ -1,7 +1,7 @@
-@import 'css/vendors.min.css';
-@import 'css/vendor.min.css';
-@import 'css/app.min.css';
-@import 'css/default-plugins.min.css';
+@import './css/vendors.min.css';
+@import './css/vendor.min.css';
+@import './css/app.min.css';
+@import './css/default-plugins.min.css';
 
 body {
   background: none;
@@ -11,4 +11,5 @@ body {
 .fullPage {
 	padding: .5em 48px 2em;
 }
+
 /* PLUGIN_CSS */

@@ -149,6 +149,17 @@ client.start()
         $$listenerCount: scope.$$listenerCount
       }
     }])
+    .service('znConfirm', [function () {
+      return async function (message, callback, cancelCallback) {
+        const confirmed = await client.call({ method: 'confirm', args: { message }, timeout: Infinity })
+
+        if (confirmed && callback) {
+          callback()
+        } else if (!confirmed && cancelCallback) {
+          cancelCallback()
+        }
+      }
+    }])
     .service('znMessage', [function () {
       return function (message, type, duration) {
         return client.call({ method: 'message', args: { params: { message, type, duration } } })

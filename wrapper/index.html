@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="wizehive">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,14 +8,30 @@
   <title>Generate Test Data Plugin</title>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Ubuntu:400,500' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" type="text/css" href="https://platform.zenginehq.com/dest/vendors.min.css">
-  <link rel="stylesheet" type="text/css" href="https://platform.zenginehq.com/dest/vendor.min.css">
-  <link rel="stylesheet" type="text/css" href="https://platform.zenginehq.com/dest/app.min.css">
-  <link rel="stylesheet" type="text/css" href="https://platform.zenginehq.com/dest/default-plugins.min.css">
-  <link rel="stylesheet" href="plugin.css">
+  <link rel="stylesheet" href="plugin.scss">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.21/angular.min.js"></script>
+  <script src="../vendor/ui-bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.21/angular-sanitize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.6/showdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ng-showdown/1.1.0/ng-showdown.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/firebase/firebase-bower@1.0.17/firebase.js"></script>
+  <script src="https://github.com/firebase/angularfire/releases/download/v0.8.0/angularfire.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment-with-locales.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bignumber.js/2.4.0/bignumber.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.2.2/tinymce.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-tinymce/0.0.9/tinymce.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js"></script>
+  <!-- bootstrap-datepicker.js -->
+  <!-- bootstrap-datetimepicker.js -->
+  <!-- bootstrap.js -->
+  <script src="../vendor/ace-builds-1.1.2/src-min-noconflict/ace.js"></script>
+  <script src="../vendor/ui-ace.js"></script>
+  <script src="../vendor/validators.js"></script>
   <script src="plugin.js"></script>
 </head>
+
 <body>
-%PLUGIN_HTML%
+  %PLUGIN_HTML%
 </body>
+
 </html>

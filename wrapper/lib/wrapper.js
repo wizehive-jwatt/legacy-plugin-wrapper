@@ -75,6 +75,8 @@ client.start()
 
     context = await client.call({ method: 'context' })
 
+    plugin.namespace = context.plugin.namespace
+
     const currentInterface = (settings.interfaces &&
       settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
 
@@ -111,14 +113,14 @@ client.start()
   }
 
   angular.module('wizehive', [
-    // 'ngSanitize',
+    'ngSanitize',
     // 'ngGrid',
     'ng-showdown',
     // 'angularjs-dropdown-multiselect',
     // 'ui.select2',
-    'ui.select',
-    // 'ui.ace',
-    'ui.sortable',
+    // 'ui.select',
+    'ui.ace',
+    // 'ui.sortable',
     'ui.bootstrap',
     'ui.tinymce',
     'firebase'

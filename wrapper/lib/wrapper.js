@@ -165,7 +165,7 @@ client.start()
         return client.call({ method: 'message', args: { params: { message, type, duration } } })
       }
     }])
-    .service('znPluginData', [function () {
+    .service('znPluginData', ['$q', function ($q) {
       return function (namespace) {
         if (namespace === 'wgn') {
           namespace = context.plugin.namespace
@@ -176,16 +176,32 @@ client.start()
             options.data = data
           }
 
-          const callback = (error, result) => {
-            if (error && errorCb) {
-              return errorCb(error)
+          const deferred = $q.defer()
+
+          const callback = (err, result) => {
+            if (err) {
+
+              const { data, status, headers } = err.data
+
+              if (errorCb) {
+                errorCb(data, status, headers)
+              }
+
+              return deferred.reject(data)
             }
-            successCb(result)
+
+            const { data, status, headers } = result.data
+
+            if (successCb) {
+              successCb(data, status, headers)
+            }
+
+            return deferred.resolve(data)
           }
 
-          return client.call({
+          client.call({
             method: 'znPluginData',
-            callback: successCb ? callback : null,
+            callback: callback,
             args: {
               namespace,
               method,
@@ -193,6 +209,8 @@ client.start()
               options
             }
           })
+
+          return deferred.promise
         }
 
         return {

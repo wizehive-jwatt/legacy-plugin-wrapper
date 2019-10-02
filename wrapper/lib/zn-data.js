@@ -119,7 +119,7 @@ export function ZnData (plugin) {
 
       let idRemovedPath = path
       if (path.substring(path.length - idField.length - 1) === ':' + idField) {
-        idRemovedPath = path.substring(0, path.length - idField.length - 1)
+        idRemovedPath = path.substring(0, path.length - idField.length - 2)
       }
 
       var save = function (params, data, success, error) {
@@ -232,14 +232,12 @@ export function ZnData (plugin) {
 
       angular.forEach(pathParams, pathParam => {
         const param = pathParam.replace(':', '')
-
-        if (params[param]) {
+        if (params[param] && url.indexOf(pathParam) !== -1) {
           url = url.replace(pathParam, params[param])
+          delete params[param]
         } else {
           url = url.replace('/' + pathParam, '')
         }
-
-        delete params[param]
       })
 
       const multipart = data ? data.multipart : null
@@ -257,51 +255,72 @@ export function ZnData (plugin) {
       }
       var deferred = $q.defer()
 
-      plugin.client.call({
-        method: 'znHttp',
-        timeout: 60000,
-        args: {
-          options: { apiVersion: 'v1' },
-          request: {
-            method,
-            url,
-            data,
-            params,
-            headers,
-            multipart
+      const call = () => {
+        plugin.client.call({
+          method: 'znHttp',
+          timeout: 60000,
+          args: {
+            options: { apiVersion: 'v1' },
+            request: {
+              method,
+              url,
+              data,
+              params,
+              headers,
+              multipart
+            }
           }
+        }).then(result => {
+          const resp = result.data
+
+          const isQuery = method === 'get' && Object.keys(params).length
+
+          let resourceData = isQuery ? [] : null
+
+          if (angular.isArray(resp)) {
+            resourceData = JSON.parse(angular.toJson(resp))
+          }
+
+          if (resp.data) {
+            resourceData = resp.data
+          }
+
+          if (successCb) {
+            successCb(resourceData, {
+              status: resp.status,
+              code: resp.code,
+              totalCount: resp.totalCount,
+              limit: resp.limit,
+              offset: resp.offset
+            }, result.headers)
+          }
+
+          deferred.resolve(resourceData)
+        }).catch(err => {
+          if (errorCb) {
+            errorCb(err.data)
+          }
+
+          deferred.reject(err.data)
+        })
+      }
+
+      if (multipart) {
+        const file = multipart.file
+        const reader = new FileReader()
+
+        reader.onload = e => {
+          const arrayBuffer = reader.result
+          multipart.file = arrayBuffer
+          multipart.name = file.name
+          multipart.type = file.type
+          call()
         }
-      }).then(result => {
-        const resp = result.data
 
-        let resourceData = []
-
-        if (angular.isArray(resp)) {
-          resourceData = JSON.parse(angular.toJson(resp))
-        }
-
-        if (resp.data) {
-          resourceData = resp.data
-        }
-
-        if (successCb) {
-          successCb(resourceData, {
-            status: resp.status,
-            code: resp.code,
-            totalCount: resp.totalCount,
-            limit: resp.limit,
-            offset: resp.offset
-          }, result.headers)
-        }
-
-        deferred.resolve(resourceData)
-      }).catch(err => {
-        if (errorCb) {
-          errorCb(err.data)
-        }
-
-        deferred.reject(err.data)
-      })
+        reader.readAsArrayBuffer(file)
+      } else {
+        call()
+      }
 
       return deferred.promise
     }

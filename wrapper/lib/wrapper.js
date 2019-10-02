@@ -123,7 +123,8 @@ client.start()
     // 'ui.sortable',
     'ui.bootstrap',
     'ui.tinymce',
-    'firebase'
+    'firebase',
+    'LocalStorageModule'
   ])
     .config(['$compileProvider', function ($compileProvider) {
       plugin.compileProvider = $compileProvider
@@ -159,6 +160,26 @@ client.start()
           cancelCallback()
         }
       }
+    }])
+    .service('znLocalStorage', ['localStorageService', function(localStorageService) {
+
+      return {
+        set: localStorageService.set,
+        get: localStorageService.get,
+        remove: localStorageService.remove,
+        isSupported: localStorageService.isSupported
+      };
+
+    }])
+    .service('znCookies', ['localStorageService', function(localStorageService) {
+
+      return {
+        set: localStorageService.cookie.set,
+        get: localStorageService.cookie.get,
+        remove: localStorageService.cookie.remove,
+        isSupported: localStorageService.cookie.isSupported
+      };
+
     }])
     .service('znMessage', [function () {
       return function (message, type, duration) {

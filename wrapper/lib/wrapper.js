@@ -118,7 +118,7 @@ client.start()
     'ng-showdown',
     // 'angularjs-dropdown-multiselect',
     // 'ui.select2',
-    // 'ui.select',
+    'ui.select',
     'ui.ace',
     // 'ui.sortable',
     'ui.bootstrap',

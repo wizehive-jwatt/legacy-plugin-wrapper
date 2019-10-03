@@ -454,14 +454,14 @@ export function Directives(plugin) {
      * @author Unknow
      * @since 0.x.x
      */
-    .directive('droppable', function () {
+    .directive('droppable', [function () {
         return {
             restrict: 'A',
             link: function (scope, element, attrs) {
                 $(element).droppable();
             }
         };
-    })
+    }])
     /**
      * ESC directive
      *
@@ -488,7 +488,7 @@ export function Directives(plugin) {
      * @author Unknow
      * @since 0.x.x
      */
-    .directive('inputOutline', function() {
+    .directive('inputOutline', [function() {
         return {
             restrict: 'A',
             link: function(scope, element, attrs) {
@@ -499,14 +499,14 @@ export function Directives(plugin) {
                 });
             }
         };
-    })
+    }])
     /**
      * Sortable directive
      *
      * @author Unknow
      * @since 0.x.x
      */
-    .directive('sortable', function () {
+    .directive('sortable', [function () {
         return {
             restrict: 'A',
             link: function (scope, element, attrs) {
@@ -531,7 +531,7 @@ export function Directives(plugin) {
                 });
             }
         };
-    })
+    }])
     .directive('znCarousel', [function() {
     
         return {
@@ -971,7 +971,7 @@ export function Directives(plugin) {
      * @since	0.5.35
      * @author	Wes DeMoney <wes@wizehive.com>
      */
-    .directive('uiDraggable', function() {
+    .directive('uiDraggable', [function() {
         return {
             restrict: 'A',
             link: function(scope, elem, attrs, ctrl) {
@@ -986,14 +986,14 @@ export function Directives(plugin) {
     
             }
         };
-    })
+    }])
     /**
      * checkList directive - allow multi value checkboxes to with with ng-model
      *
      * @author	Unknown
      * @since	0.5.x
      */
-    .directive('checkList', function() {
+    .directive('checkList', [function() {
         return {
             scope: {
                 checkValue: '=',
@@ -1072,7 +1072,7 @@ export function Directives(plugin) {
                 scope.$watch('list', setupHandler, true);
             }
         };
-    })
+    }])
     /**
      * User Event
      *
@@ -1322,7 +1322,7 @@ export function Directives(plugin) {
      * @since	0.5.79
      * @param	{string}	input value
      */
-    .directive('numbersOnly', function () {
+    .directive('numbersOnly', [function () {
         return {
             require: 'ngModel',
             link: function (scope, element, attr, ngModel) {
@@ -1365,7 +1365,7 @@ export function Directives(plugin) {
                 });
             }
         };
-    })
+    }])
     .directive('znFormSelect', [function() {
         return {
             restrict: 'E',

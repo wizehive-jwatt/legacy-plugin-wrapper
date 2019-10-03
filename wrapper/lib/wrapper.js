@@ -118,12 +118,13 @@ client.start()
     'ng-showdown',
     // 'angularjs-dropdown-multiselect',
     // 'ui.select2',
-    // 'ui.select',
+    'ui.select',
     'ui.ace',
     // 'ui.sortable',
     'ui.bootstrap',
     'ui.tinymce',
-    'firebase'
+    'firebase',
+    'LocalStorageModule'
   ])
     .config(['$compileProvider', function ($compileProvider) {
       plugin.compileProvider = $compileProvider
@@ -149,12 +150,43 @@ client.start()
         $$listenerCount: scope.$$listenerCount
       }
     }])
+    .service('znConfirm', [function () {
+      return async function (message, callback, cancelCallback) {
+        const confirmed = await client.call({ method: 'confirm', args: { message }, timeout: Infinity })
+
+        if (confirmed && callback) {
+          callback()
+        } else if (!confirmed && cancelCallback) {
+          cancelCallback()
+        }
+      }
+    }])
+    .service('znLocalStorage', ['localStorageService', function(localStorageService) {
+
+      return {
+        set: localStorageService.set,
+        get: localStorageService.get,
+        remove: localStorageService.remove,
+        isSupported: localStorageService.isSupported
+      };
+
+    }])
+    .service('znCookies', ['localStorageService', function(localStorageService) {
+
+      return {
+        set: localStorageService.cookie.set,
+        get: localStorageService.cookie.get,
+        remove: localStorageService.cookie.remove,
+        isSupported: localStorageService.cookie.isSupported
+      };
+
+    }])
     .service('znMessage', [function () {
       return function (message, type, duration) {
         return client.call({ method: 'message', args: { params: { message, type, duration } } })
       }
     }])
-    .service('znPluginData', [function () {
+    .service('znPluginData', ['$q', function ($q) {
       return function (namespace) {
         if (namespace === 'wgn') {
           namespace = context.plugin.namespace
@@ -165,16 +197,32 @@ client.start()
             options.data = data
           }
 
-          const callback = (error, result) => {
-            if (error && errorCb) {
-              return errorCb(error)
+          const deferred = $q.defer()
+
+          const callback = (err, result) => {
+            if (err) {
+
+              const { data, status, headers } = err.data
+
+              if (errorCb) {
+                errorCb(data, status, headers)
+              }
+
+              return deferred.reject(data)
             }
-            successCb(result)
+
+            const { data, status, headers } = result.data
+
+            if (successCb) {
+              successCb(data, status, headers)
+            }
+
+            return deferred.resolve(data)
           }
 
-          return client.call({
+          client.call({
             method: 'znPluginData',
-            callback: successCb ? callback : null,
+            callback: callback,
             args: {
               namespace,
               method,
@@ -182,6 +230,8 @@ client.start()
               options
             }
           })
+
+          return deferred.promise
         }
 
         return {

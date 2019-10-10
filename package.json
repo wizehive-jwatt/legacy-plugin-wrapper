@@ -40,7 +40,7 @@
     "moment": "github:Wizehive/moment#2.8.3",
     "ng-showdown": "github:Wizehive/ng-showdown#v1.1.0",
     "showdown": "github:Wizehive/showdown#1.7.6",
-    "tinymce": "^4.5.7",
+    "tinymce": "4.9.6",
     "zn-filter-matcher": "1.2.3"
   }
 }

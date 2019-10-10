@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@zenginehq/post-rpc-client": "0.8.0",
+    "angular-bootstrap": "github:Wizehive/bootstrap-bower",
     "angular-ui-ace": "github:Wizehive/ui-ace",
     "angular-ui-tinymce": "github:Wizehive/ui-tinymce",
     "angularfire": "github:Wizehive/angularFire#v0.8.0",

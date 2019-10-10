@@ -26,10 +26,10 @@ import '../vendor/ace-builds-1.1.2/src-min-noconflict/mode-xml'
 import 'angular-ui-ace/src/ui-ace'
 
 import '../vendor/bootstrap.js'
-import '../vendor/ui-bootstrap-tpls.js'
+import 'angular-bootstrap'
 import '../vendor/validators.js'
 
-import '../vendor/ui-select.js'
+import 'ui-select'
 
 import plugin from './lib/wrapper'
 import { Services } from './lib/services'

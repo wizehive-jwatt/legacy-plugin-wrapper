@@ -1,6 +1,7 @@
 import '@babel/polyfill'
 import ZnFilterMatcher from 'zn-filter-matcher'
 import Client from '@zenginehq/post-rpc-client'
+import ZnSize from 'ifresize'
 
 var plugin = {}
 
@@ -14,6 +15,18 @@ Function.prototype.curry = Function.prototype.curry || function () {
 
 const client = new Client(document.location.ancestorOrigins[0])
 client.start()
+
+const znResize = dimensions => client.call({ method: 'resize', args: { dimensions } })
+
+plugin.sizer = new ZnSize(async dimensions => {
+  const result = await znResize(dimensions).catch(err => err instanceof Error ? err : new Error(JSON.stringify(err)))
+
+  if (result instanceof Error) {
+    return { width: null, height: null }
+  }
+
+  return result
+}, { width: 'eastToWest', height: 'bodyScroll' })
 
 /**
  * Wizehive controller
@@ -113,6 +126,8 @@ client.start()
       scope.type = context.pluginView.type
       $compile(pluginDiv)(scope)
     })
+
+    plugin.sizer.autoSize()
 
     return plugin
   }

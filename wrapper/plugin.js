@@ -12,17 +12,18 @@ import showdown from 'showdown'
 import 'ng-showdown'
 
 import 'tinymce/tinymce'
-import 'tinymce/plugins/autoresize/plugin'
-import 'tinymce/plugins/paste/plugin'
-import 'tinymce/plugins/link/plugin'
-import 'tinymce/plugins/hr/plugin'
-import 'tinymce/plugins/textcolor/plugin'
+import 'tinymce/plugins/autoresize'
+import 'tinymce/plugins/table'
 import 'tinymce/themes/modern/theme'
+// do not import skins.
+// they are copied directly by the legacy builder.
 import 'angular-ui-tinymce'
 
-import '../vendor/ace-builds-1.1.2/src-min-noconflict/ace.js'
-import '../vendor/ace-builds-1.1.2/src-min-noconflict/theme-twilight'
-import '../vendor/ace-builds-1.1.2/src-min-noconflict/mode-xml'
+import 'ace-builds/src-min-noconflict/ace'
+import 'ace-builds/src-min-noconflict/theme-twilight'
+import 'ace-builds/src-min-noconflict/mode-css'
+// do not import any ace workers.
+// they are copied directly by the legacy builder.
 import 'angular-ui-ace/src/ui-ace'
 
 import '../vendor/bootstrap.js'

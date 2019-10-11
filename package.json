@@ -29,7 +29,7 @@
     "sass": "^1.22.12"
   },
   "dependencies": {
-    "@zenginehq/post-rpc-client": "0.8.0",
+    "@zenginehq/post-rpc-client": "^0.8.1",
     "ace-builds": "1.4.6",
     "angular-bootstrap": "github:Wizehive/bootstrap-bower",
     "angular-ui-ace": "github:Wizehive/ui-ace",

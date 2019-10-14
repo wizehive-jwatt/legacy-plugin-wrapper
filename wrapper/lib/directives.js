@@ -1,112 +1,7 @@
+import moment from 'moment'
+
 export function Directives (plugin) {
-  /**
-     * Wizehive directives
-     *
-     * These are behavioral directives. Not ones that behave as interactive "widgets".
-     *
-     * Copyright (c) WizeHive - http://www.wizehive.com
-     *
-     * @since 0.x.x
-     */
   plugin
-    /**
-     * App path directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('appPath', ['$location', function ($location) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          element.click(function () {
-            var href = $(this).attr('href') || $(this).attr('app-path')
-            if (href && !/#|javascript/g.test(href) && !$(this).attr('ng-click')) {
-              scope.$apply(function () {
-                $location.path(href)
-                scope.$emit('pathChanged')
-              })
-              return false
-            }
-          })
-        }
-      }
-    }])
-    /**
-     * Class list directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('classList', ['$compile', function ($compile) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          var classes = (attrs.classList || '').replace(/ /g, '').split(',')
-          angular.forEach(classes, function (className) {
-            var parts = className.split('.')
-            var last = parts[parts.length - 1].replace('$', '')
-            scope.$watch(className, function (val) {
-              if (val) {
-                element.addClass(last)
-              } else {
-                element.removeClass(last)
-              }
-            })
-          })
-        }
-      }
-    }])
-    /**
-     * Cloak data directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('cloakData', ['$compile', function ($compile) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          var $loading
-          var timeout
-          var waiting = false // so we know if we're already waiting if "loaded" gets set to false more than once
-          var delay = 0
-          var watcher = 'loaded' // If no value is passed to ng-cloak, watch $scope.loaded by default
-
-          if (attrs.cloakData) {
-            watcher = attrs.cloakData
-          }
-
-          scope.$watch(watcher, function (loaded) {
-            if (loaded) {
-              waiting = false
-              if (timeout) {
-                clearTimeout(timeout)
-              }
-              if ($loading) {
-                $loading.remove()
-              }
-              element.css('visibility', 'visible')
-            } else if (!waiting) {
-              waiting = true
-              timeout = setTimeout(function () {
-                $loading = angular.element('<div class="loading sans">Loading ... <span class="throbber"></span></div>').insertBefore(element)
-                timeout = null
-              }, delay)
-              element.css('visibility', 'hidden')
-            }
-          })
-        }
-      }
-    }])
-    /**
-     * Dropdown menu persist directive
-     *
-     * Add overrides to bootstrap dropdown to keep it open on inside clicks
-     *
-     * @author Paul W. Smith <paul@wizehive.com>
-     * @since 0.5.25
-     */
     .directive('dropdownMenuPersist', [function () {
       return {
         restrict: 'A',
@@ -116,69 +11,6 @@ export function Directives (plugin) {
           $(element).click(function (e) {
             if (!$(e.target).hasClass('dropdown-menu-close')) {
               e.stopPropagation()
-            }
-          })
-        }
-      }
-    }])
-    .directive('znFocusMe', ['$timeout', function ($timeout) {
-      return {
-
-        restrict: 'A',
-        require: 'ngModel',
-        scope: {
-          focus: '=znFocusMe'
-        },
-
-        link: function (scope, element, attrs, ngModel) {
-          scope.$watch('focus.enabled', function (value) {
-            if (value === true) {
-              $timeout(function () {
-                ngModel.$setViewValue('')
-                ngModel.$render()
-                element[0].focus()
-              })
-            }
-          }, true)
-          element.bind('blur', function () {
-            scope.$apply(function () {
-              scope.focus.enabled = false
-            })
-          })
-        }
-
-      }
-    }])
-    // https://stackoverflow.com/a/18295416
-    .directive('znFocusOn', ['$timeout', function ($timeout) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          scope.$on('znFocusOn', function (event, name) {
-            if (name === attrs.znFocusOn) {
-              element[0].focus()
-            }
-          })
-        }
-      }
-    }])
-    .directive('znDefaultValue', [function () {
-      return {
-        restrict: 'A',
-        require: 'ngModel',
-        scope: {
-          record: '='
-        },
-        link: function (scope, el, attrs, ngModel) {
-          unwatch = scope.$watch('record', function (record) {
-            if (!record) {
-              return
-            }
-
-            if (attrs.znDefaultValue && !record.id && !record.localId) {
-              ngModel.$setViewValue(attrs.znDefaultValue)
-              ngModel.$render()
-              unwatch()
             }
           })
         }
@@ -213,7 +45,6 @@ export function Directives (plugin) {
         }
       }
     }])
-
     .directive('znDatetimepickerWrapper', ['$rootScope', function ($rootScope) {
       return {
         restrict: 'A',
@@ -248,7 +79,10 @@ export function Directives (plugin) {
         }],
         link: function (scope, element, attrs, ngModelCtrl) {
           var syncTime = scope.$eval(attrs.syncTime)
-          var apiFormat = $rootScope.apiDateFormat
+          var apiDateFormat = 'YYYY-MM-DD'
+          var apiDateTimeFormat = 'YYYY-MM-DDTHH:mm:ssZZ'
+
+          var apiFormat = apiDateFormat
           var datepicker = element.find('[datepicker-popup]')
           var datepickerNgModelCtrl = datepicker.controller('ngModel')
 
@@ -260,10 +94,10 @@ export function Directives (plugin) {
 
           function setApiFormat (val) {
             if (val) {
-              apiFormat = $rootScope.apiDateTimeFormat
+              apiFormat = apiDateTimeFormat
               syncTime = true
             } else {
-              apiFormat = $rootScope.apiDateFormat
+              apiFormat = apiDateFormat
               syncTime = false
             }
           }
@@ -280,7 +114,7 @@ export function Directives (plugin) {
             }
 
             if (typeof value === 'object' &&
-                        value.constructor.name === 'Date') { // valid Date object
+                          value.constructor.name === 'Date') { // valid Date object
               var apiDate = moment(scope.date)
 
               if (syncTime && moment(scope.time).isValid()) {
@@ -352,88 +186,6 @@ export function Directives (plugin) {
         }
       }
     }])
-    /**
-     * Datetime picker directive
-     *
-     * @author	Everton Yoshitani <everton@wizehive.com>
-     * @since 0.x.x
-     */
-    .directive('datetimepicker', ['$timeout', function ($timeout) {
-      return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function (scope, element, attrs, ctrl) {
-          var dateFormat = element.attr('datetimepicker-date-format')
-          var autoClose = (element.attr('datetimepicker-autoclose') === 'true')
-          var defaultToModelValue = (element.attr('datetimepicker-default-to-model-value') === 'true')
-          if (!dateFormat) {
-            dateFormat = 'yyyy-mm-dd H:ii P'
-          }
-          /*
-                 * Check format options for bootstrap-datetimepicker
-                 * at http://www.malot.fr/bootstrap-datetimepicker/index.php
-                 *
-                 * If `dateFormat` do not contains any of the time formats (p,P,s,ss,i,ii,h,hh or HH)
-                 * the time picker part will be set off, acting s a datepicker only
-                 */
-          var minView = (dateFormat.match(/[psih]/i)) ? 0 : 2
-          attrs.$observe('datetimepickerStartDate', function (val) {
-            element.datetimepicker('setStartDate', val)
-          })
-          if (!element.attr('placeholder')) {
-            attrs.$set('placeholder', dateFormat)
-          }
-          element.datetimepicker({
-            format: dateFormat,
-            autoclose: autoClose,
-            todayBtn: true,
-            minView: minView,
-            showMeridian: true
-          })
-          element.datetimepicker().on('show', function (evt) {
-            if (defaultToModelValue) {
-              var format = element.datetimepicker.DPGlobal.parseFormat(dateFormat, 'standard')
-              var date = element.datetimepicker.DPGlobal.parseDate(ctrl.$modelValue, format, 'en', 'standard')
-              if (date.getFullYear() > 1900) { // Because some things treat 0000-00-00 as no value
-                element.datetimepicker('update', date)
-              } else {
-                element.datetimepicker('update', new Date())
-              }
-            }
-          })
-          element.datetimepicker().on('changeDate', function (evt) {
-            var format = element.datetimepicker.DPGlobal.parseFormat(dateFormat, 'standard')
-            var date = element.datetimepicker.DPGlobal.formatDate(evt.date, format, 'en', 'standard')
-            if (ctrl && ctrl.$setViewValue) {
-              // Wrap in $timeout so that it will automatically be $apply()'ed
-              $timeout(function () {
-                ctrl.$setViewValue(date)
-              })
-            }
-          })
-        }
-      }
-    }])
-    /**
-     * Droppable directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('droppable', function () {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          $(element).droppable()
-        }
-      }
-    })
-    /**
-     * ESC directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
     .directive('esc', ['$rootScope', function ($rootScope) {
       return {
         restrict: 'A',
@@ -448,214 +200,6 @@ export function Directives (plugin) {
         }
       }
     }])
-    /**
-     * Input outline directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('inputOutline', function () {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          $(element).click(function () {
-            $(this).addClass('mouse')
-          }).keydown(function () {
-            $(this).removeClass('mouse')
-          })
-        }
-      }
-    })
-    /**
-     * Sortable directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('sortable', function () {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          element.sortable({
-            cancel: '.ui-state-disabled',
-            connectWith: '.connected-sortable',
-            update: function (event, ui) {
-              if (scope.updateSortable) {
-                scope.updateSortable(event, ui)
-              }
-            },
-            receive: function (event, ui) {
-              if (scope.receiveSortable) {
-                scope.receiveSortable(event, ui)
-              }
-            },
-            remove: function (event, ui) {
-              if (scope.removeSortable) {
-                scope.removeSortable(event, ui)
-              }
-            }
-          })
-        }
-      }
-    })
-    .directive('znCarousel', [function () {
-      return {
-        restrict: 'A',
-        scope: true,
-        replace: false,
-        controller: ['$scope', '$timeout', '$attrs', function ($scope, $timeout, $attrs) {
-          $scope.slidesInSlideshow = $attrs.slides || 3
-          $scope.slidesTimeIntervalInMs = 8000
-
-          $scope.slideStep = function (step) {
-            if ($scope.slideTimer) {
-              $timeout.cancel($scope.slideTimer)
-            }
-
-            $scope.slideshow = step
-
-            $scope.slideTimer = $timeout(function () {
-              $scope.nextSlide()
-            }, $scope.slidesTimeIntervalInMs)
-          }
-
-          $scope.nextSlide = function () {
-            $scope.slideStep(($scope.slideshow % $scope.slidesInSlideshow) + 1)
-          }
-
-          $scope.slideStep(1)
-        }]
-
-      }
-    }])
-    /**
-     * Specify custom behavior when an element is scrolled.
-     * Usage: <ANY zn-scroll="expression"> ... </ANY>, where 'expression' is evaluated on scroll
-     * Also exposes an $event object within the scope of that expression.
-     *
-     * @author	Anna Parks
-     * @since	0.5.46
-     */
-    .directive('znScroll', ['$rootScope', '$parse', function ($rootScope, $parse) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          var scrollFunction = $parse(attrs.znScroll)
-
-          angular.element('.modal.record-overlay  > .modal-body').scroll(function (event) {
-            scope.$apply(function () {
-              scrollFunction(scope, { $event: event })
-            })
-          })
-        }
-      }
-    }])
-    /**
-     * Time picker directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
-    .directive('timepicker', ['$compile', function ($compile) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          var options = ''
-          var i = 0
-          var j = 0
-          var ampm = 'AM'
-          var h; var hh; var hhh
-          var m; var mm
-          var val; var sel
-          var defaultVal = '12:00:00'
-          for (; i < 24; i++) {
-            h = i < 10 ? '0' + i : i
-            hh = i > 12 ? i - 12 : i
-            hh = hh === 0 ? 12 : hh
-            j = 0
-            for (; j < 4; j++) {
-              m = j * 15
-              mm = m < 10 ? '0' + m : m
-              val = h + ':' + mm + ':00'
-              options += '<option value="' + val + '">' + hh + ':' + mm + ' ' + ampm + '</option>'
-            }
-            if (i === 11) {
-              ampm = 'PM'
-            }
-          }
-          element.html(options)
-          if (attrs.ngModel) {
-            scope.$watch(attrs.ngModel, function (val) {
-              element.val(val || defaultVal)
-            })
-          }
-        }
-      }
-    }])
-    /**
-     * Hover menu directive
-     *
-     * @author	Paul W. Smith
-     * @since	0.5.28
-     */
-    .directive('hoverMenu', ['$timeout', '$parse', function ($timeout, $parse) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          scope.delay = (angular.isDefined(attrs.delay)) ? attrs.delay : 300
-          // Callback function when menu is displayed
-          scope.onShow = angular.noop
-
-          // Set element to show/hide
-          attrs.$observe('hoverMenu', function (selector) {
-            scope.menuElem = element.find(selector)
-          })
-
-          // Set up callback function if one was passed
-          attrs.$observe('onShow', function (callback) {
-            // Standard angular stuff
-            var func = $parse(callback)
-            scope.onShow = function () {
-              return func(scope)
-            }
-          })
-
-          element.bind('mouseenter', function () {
-            scope.setVisible = true
-            scope.toggleMenu()
-          })
-
-          element.bind('mouseleave', function () {
-            scope.setVisible = false
-            scope.toggleMenu()
-          })
-
-          /**
-                 * Toggle menu visibility after a timeout
-                 *
-                 * @author	Paul W. Smith
-                 * @since	0.5.28
-                 */
-          scope.toggleMenu = function () {
-            $timeout(function () {
-              if (scope.setVisible) {
-                scope.menuElem.addClass('active')
-                // Callback passed into directive
-                scope.onShow()
-              } else {
-                scope.menuElem.removeClass('active')
-              }
-            }, scope.delay)
-          }
-        }
-      }
-    }])
-    /**
-     * Validate directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
     .directive('validate', ['$compile', function ($compile) {
       return {
         restrict: 'A',
@@ -696,18 +240,32 @@ export function Directives (plugin) {
         }
       }
     }])
-    /**
-     * Form error directive
-     *
-     * @author Unknow
-     * @since 0.x.x
-     */
     .directive('formError', [function () {
       return {
         restrict: 'A',
         scope: false,
         link: function (scope, element, attrs) {
           var name = attrs.name
+
+          function serializeError (error) {
+            var errorMessages = {}
+            var p, x
+            for (var i in error) {
+              if (error.hasOwnProperty(i)) {
+                if (!angular.isObject(error[i]) || angular.isArray(error[i])) {
+                  errorMessages[i] = error[i]
+                } else {
+                  p = serializeError(error[i])
+                  for (x in p) {
+                    if (p.hasOwnProperty(x)) {
+                      errorMessages[i + '.' + x] = p[x]
+                    }
+                  }
+                }
+              }
+            }
+            return errorMessages
+          }
 
           scope.$watch(name, function (form) {
             if (!form) {
@@ -719,7 +277,7 @@ export function Directives (plugin) {
                 return
               }
 
-              var errors = wizehive.serializeError(error)
+              var errors = serializeError(error)
 
               form.submitted = true
 
@@ -775,131 +333,6 @@ export function Directives (plugin) {
         }
       }
     }])
-    /**
-     * Follow Record Button
-     *
-     * Show Follow/Unfollow button
-     *
-     * @since 0.5.28
-     * @author Everton Yoshitani <everton@wizehive.com>
-     */
-    .directive('followRecordButton', ['$rootScope', 'Data', 'message', function ($rootScope, Data, message) {
-      return {
-        restrict: 'A',
-        templateUrl: function (element, attrs) {
-          var url = '/templates/partials/follow-record-button'
-          if (angular.isDefined(attrs.followRecordButton)) {
-            return url + '-' + attrs.followRecordButton + '.html'
-          } else {
-            return url + '-default.html'
-          }
-        },
-        replace: true,
-        scope: {
-          record: '=',
-          workspaceId: '='
-        },
-        link: function (scope, element, attrs) {
-          // Wait record ID be available
-          // Need a watch record is available with a slight delay
-          scope.$watch('record', function () {
-            // Check if all scope properties are available
-            if (!scope.record || !scope.record.id) {
-              return
-            }
-
-            // Get subscription status
-            scope.getSubscription = function () {
-              var params = {
-                attributes: 'id',
-                resource: 'records',
-                resourceId: scope.record.id,
-                includeRelated: true,
-                workspace: { id: scope.workspaceId || $rootScope.workspace.id },
-                user: { id: $rootScope.user.id }
-              }
-              Data('Subscriptions').get(
-                params,
-                function (response) {
-                  // success
-                  if (response && response[0]) {
-                    scope.subscription = true
-                  } else {
-                    scope.subscription = false
-                  }
-                },
-                function (response) {
-                  // error
-                }
-              )
-            }
-
-            // Subscribe
-            scope.subscribe = function () {
-              scope.subscription = true
-              var data = {
-                resource: 'records',
-                resourceId: scope.record.id,
-                includeRelated: true,
-                workspace: { id: scope.workspaceId || $rootScope.workspace.id },
-                user: { id: $rootScope.user.id }
-              }
-              Data('Subscriptions').save(
-                {},
-                data,
-                function (response) {
-                  // success
-                  scope.subscription = true
-                  $rootScope.$broadcast('subscription-update')
-                },
-                function (response) {
-                  // error
-                  scope.subscription = false
-                  message('Error: adding subscription', 'error')
-                }
-              )
-            }
-
-            // Unsubscribe
-            scope.unsubscribe = function () {
-              if (!scope.subscription) {
-                return
-              }
-              scope.subscription = false
-              Data('Subscriptions').deleteAll({
-                resource: 'records',
-                resourceId: scope.record.id,
-                includeRelated: true
-              },
-              function (response) {
-                // success
-                $rootScope.$broadcast('subscription-update')
-              },
-              function (response) {
-                // error
-                scope.subscription = true
-                message('Error: removing subscription', 'error')
-              }
-              )
-            }
-
-            // Get subscription
-            scope.getSubscription()
-
-            // Listen for subscription updates
-            scope.$on('subscription-update', function (evt, obj) {
-              scope.getSubscription()
-            })
-          })
-        }
-      }
-    }])
-    /**
-     * Modal
-     *
-     * @since 0.5.29
-     * @author Everton Yoshitani <everton@wizehive.com>
-     */
     .directive('modal', ['modal', function (modal) {
       return {
         restrict: 'A',
@@ -922,8 +355,6 @@ export function Directives (plugin) {
     /**
      * Draggable Wrapper Directive
      *
-     * @since	0.5.35
-     * @author	Wes DeMoney <wes@wizehive.com>
      */
     .directive('uiDraggable', function () {
       return {
@@ -1009,10 +440,6 @@ export function Directives (plugin) {
                 scope.list.splice(index, 1)
               }
             }
-            if (!setup) {
-              var ctrl = scope.$parent.webform[elem.data('parent_field')]
-              ctrl.$setViewValue(ctrl.$modelValue)
-            }
           }
 
           var setupHandler = handler.bind(null, true)
@@ -1025,43 +452,6 @@ export function Directives (plugin) {
         }
       }
     })
-    /**
-     * User Event
-     *
-     * @since	0.5.45
-     * @author	Wes DeMoney <wes@wizehive.com>
-     */
-    .directive('userEvent', ['$window', function ($window) {
-      return {
-        restrict: 'A',
-        replace: false,
-        scope: {
-          data: '@userEvent'
-        },
-        link: function (scope, element, attrs) {
-          if (!scope.data) {
-            return
-          }
-          element.bind('click', function (e) {
-            e.preventDefault()
-
-            var name = ''
-            var data = {}
-
-            if (typeof scope.data === 'string') {
-              name = scope.data
-              data = {}
-            } else {
-              name = scope.data.name
-              data = angular.copy(scope.data)
-              data.name = null
-            }
-
-            $window.userEvent.track(name, data)
-          })
-        }
-      }
-    }])
     /**
      * Auto Expanding Textarea
      *
@@ -1120,146 +510,17 @@ export function Directives (plugin) {
           })
         }
       }
-    /**
-     * Height match widget
-     *
-     * Automatically adjust an element's height to equal that of an ancestor element
-     *
-     * Copyright (c) WizeHive - http://www.wizehive.com
-     *
-     * @author	Paul W. Smith <paul@wizehive.com>
-     * @since	0.5.48
-     * @param	heightMatch - selector of ancestor element to match.
-     */
-    }]).directive('heightMatch', ['$window', '$timeout', function ($window, $timeout) {
-      return {
-        restrict: 'A',
-        link: function (scope, element, attrs) {
-          function setInnerHeight () {
-            element.css('min-height', element.closest(attrs.heightMatch).innerHeight() + 'px')
-          }
-
-          // Re-set height on window resize
-          angular.element($window).bind('resize', setInnerHeight)
-
-          // Set height initially
-          setInnerHeight()
-
-          // remove event listener
-          scope.$on('$destroy', function (event) {
-            angular.element($window).unbind('resize', setInnerHeight)
-          })
-        }
-      }
-    }])
-    /**
-     * Open Lightbox Programmatically
-     *
-     * @author	Wes DeMoney <wes@wizehive.com>
-     * @since	0.5.62
-     * @param	{string}	url		Url to open in Lightbox
-     */
-    .directive('appLightbox', ['$location', 'recordOverlayService', function ($location, recordOverlayService) {
-      return {
-        restrict: 'A',
-        link: function (scope, elem, attrs) {
-          // Lightbox gets confused by data-bound href, so do it this way
-          var openLightbox = function (url) {
-            var a = angular.element('<a href="' + url + '" data-lightbox="' + Math.random() * 1000 + '"></a>').appendTo(elem)
-
-            // Open lightbox
-            a.trigger('click')
-            angular.element('#lightbox').on('close', function () {
-              recordOverlayService.ignoreWarnIfDirty = true
-              $location.search('lightbox', null).replace()
-              scope.$digest()
-            })
-          }
-
-          // Open lightbox when url changes
-          attrs.$observe('url', function (url) {
-            if (!url) {
-              return
-            }
-            openLightbox(url)
-          })
-        }
-      }
-    }])
-    .directive('fileViewerLink', ['$rootScope', function ($rootScope) {
-      return {
-        restrict: 'A',
-        replace: true,
-        templateUrl: '/templates/partials/file-viewer-link.html',
-        scope: {
-          file: '='
-        },
-        link: function (scope, element, attrs) {
-          scope.enableFileViewer = wizehive.config('enableFileViewer')
-          scope.openFileViewer = $rootScope.openFileViewer
-        }
-      }
-    }])
-    /**
-     * Open File Lightbox
-     *
-     * @author	Wes DeMoney <wes@wizehive.com>
-     * @since	0.5.62
-     * @param	{int}	file Id
-     */
-    .directive('lightboxFile', ['$location', function ($location) {
-      return {
-        restrict: 'A',
-        replace: false,
-        scope: {
-          data: '@lightboxFile'
-        },
-        link: function (scope, element, attrs) {
-          element.bind('click', function (e) {
-            e.preventDefault()
-
-            $location.search('lightbox', 'file.' + scope.data).replace()
-          })
-        }
-      }
-    }])
-
-    /**
-     * Update on Enter
-     *
-     * Updates a model value after enter key is pressed
-     */
-    .directive('updateOnEnter', [function () {
-      return {
-        priority: 100,
-        restrict: 'A',
-        require: 'ngModel',
-        link: function (scope, element, attrs, ctrl) {
-          element.unbind('input').unbind('keydown').unbind('change')
-          element.bind('keydown', function (e) {
-            var keyCode = e.which || e.keyCode
-            if (keyCode == 13) {
-              scope.$apply(function () {
-                ctrl.$setViewValue(element.val())
-              })
-            }
-          })
-        }
-      }
-    }])
-    .directive('limitTo', [function () {
-      return {
-        restrict: 'A',
-        link: function (scope, elem, attrs) {
-          var limit = parseInt(attrs.limitTo)
-          elem.bind('keypress', function (e) {
-            if (elem[0].value.length >= limit) {
-              e.preventDefault()
-              return false
-            }
-          })
-        }
-      }
+      /**
+       * Height match widget
+       *
+       * Automatically adjust an element's height to equal that of an ancestor element
+       *
+       * Copyright (c) WizeHive - http://www.wizehive.com
+       *
+       * @author	Paul W. Smith <paul@wizehive.com>
+       * @since	0.5.48
+       * @param	heightMatch - selector of ancestor element to match.
+       */
     }])
     /**
      * Limit an input to numeric values only. Invalid characters will be removed
@@ -1279,7 +540,7 @@ export function Directives (plugin) {
 
             // Toggle Negative Value
             function toggleNegativeValue (value) {
-              numNegatives = value.length - value.replace(/-/g, '').length
+              const numNegatives = value.length - value.replace(/-/g, '').length
 
               if (numNegatives > 1 || value.indexOf('-') !== 0) {
                 value = value.replace(/-/g, '')
@@ -1357,136 +618,821 @@ export function Directives (plugin) {
         }
       }
     }])
-    .directive('znMemberSelect', [function () {
-      return {
-        restrict: 'E',
-        scope: {
-          ngModel: '=ngModel',
-          ngDisabled: '=',
-          ngChange: '&',
-          members: '=',
-          memberProperty: '@'
-        },
-        templateUrl: '/templates/partials/member-select/member-select.html',
-        link: function (scope, element, attr) {
-          scope.member = {}
-
-          scope.$watch('ngDisabled', function (ngDisabled) {
-            scope.disabled = (!ngDisabled && !attr.hasOwnProperty('ngDisabled')) ? false : ngDisabled || true
-          })
-
-          // update zn-member-select ngModel
-          scope.$watch('member.selected', function (selected) {
-            var value
-            if (selected) {
-              value = scope.memberProperty ? selected[scope.memberProperty] : selected
-            }
-            if (value) {
-              scope.ngModel = value
-              scope.ngChange()
-            }
-          })
-
-          // update ui-select ngModel
-          scope.$watch('ngModel', function (ngModel) {
-            var value
-            if (ngModel && scope.memberProperty) {
-              angular.forEach(scope.members, function (member) {
-                if (member[scope.memberProperty] == ngModel) {
-                  value = angular.copy(member)
-                }
-              })
-            } else if (ngModel) {
-              value = ngModel
-            }
-            if (value) {
-              scope.member.selected = value
-            }
-          })
-        }
-      }
-    }])
-    .directive('znFormFolderSelect', [function () {
-      return {
-        restrict: 'E',
-        scope: {
-          ngModel: '=ngModel',
-          ngDisabled: '=',
-          ngChange: '&',
-          folders: '=',
-          folderProperty: '@'
-        },
-        templateUrl: '/templates/partials/form-folder-select/form-folder-select.html',
-        link: function (scope, element, attr) {
-          scope.folder = {}
-
-          scope.$watch('ngDisabled', function (ngDisabled) {
-            scope.disabled = (!ngDisabled && !attr.hasOwnProperty('ngDisabled')) ? false : ngDisabled || true
-          })
-
-          // update zn-form-select ngModel
-          scope.$watch('folder.selected', function (selected) {
-            var value
-            if (selected) {
-              value = scope.folderProperty ? selected[scope.folderProperty] : selected
-            }
-            if (value) {
-              scope.ngModel = value
-              scope.ngChange()
-            }
-          })
-
-          // update ui-select ngModel
-          scope.$watch('ngModel', function (ngModel) {
-            var value
-            if (ngModel && scope.folderProperty) {
-              angular.forEach(scope.folders, function (folder) {
-                if (folder[scope.folderProperty] == ngModel) {
-                  value = angular.copy(folder)
-                }
-              })
-            } else if (ngModel) {
-              value = ngModel
-            }
-            if (value) {
-              scope.folder.selected = value
-            }
-          })
-        }
-      }
-    }])
-    .directive('recordOverlayFolderPicker', [function () {
+    .directive('znInlineFilter', ['RecursionHelper', 'filterDefinition', 'inlineFilter', function (RecursionHelper, filterDefinition, inlineFilter) {
       return {
         restrict: 'A',
         scope: {
-          ngModel: '=ngModel',
-          folders: '=',
-          onChangeFolder: '&onChangeFolder'
+          options: '=znInlineFilter',
+          model: '=ngModel',
+          level: '=?znInlineFilterPrivateLevel',
+          removeParentCondition: '&znInlineFilterPrivateRemoveParentCondition',
+          counts: '=?znInlineFilterPrivateCounts',
+          operatorOptions: '=?znInlineFilterPrivateOperatorOptions'
         },
         require: 'ngModel',
-        templateUrl: '/templates/partials/record-overlay/folder-picker-directive.html',
-        link: function (scope, element, attr, ngModelCtrl) {
-          scope.folder = null
+        compile: function (element) {
+          var link = {
+            post: function (scope, element, attrs, ngModelCtrl) {
+              scope.operator = null,
+              scope.conditions = []
 
-          scope.folderSearch = null
+              function getOperators () {
+                return scope.options.operators || inlineFilter.operators
+              }
 
-          scope.maxFolders = 4
+              function getDefaultOperator () {
+                return inlineFilter.getDefaultOperator(getOperators())
+              }
 
-          scope.folderSearchInputFocus = {}
+              // Convert Model Value to View Value
+              ngModelCtrl.$formatters.push(function (modelValue) {
+                var filter = filterDefinition(modelValue)
 
-          function findFolder (folderId) {
-            var folder = scope.folders.filter(function (folder) {
-              return folder.id == folderId
-            })
+                if (!filter.getOperator()) {
+                  filter.setOperator(getDefaultOperator())
+                }
 
-            if (folder && folder.length) {
-              return folder.shift()
+                if (!filter.getConditions()) {
+                  filter.setConditions([])
+                }
+
+                return filter
+              })
+
+              // Convert View Value to Model Value
+              ngModelCtrl.$parsers.push(function (viewValue) {
+                // Update model without breaking prototypal inheritance
+                angular.forEach(Object.keys(ngModelCtrl.$modelValue), function (key) {
+                  delete ngModelCtrl.$modelValue[key]
+                })
+                return angular.extend(ngModelCtrl.$modelValue, viewValue.getFilter())
+              })
+
+              // Render Filter to Scope Variables
+              ngModelCtrl.$render = function () {
+                scope.operator = ngModelCtrl.$viewValue.getOperator()
+                scope.conditions = ngModelCtrl.$viewValue.getConditions()
+              }
+
+              function watchFilter () {
+                var filter = filterDefinition()
+                filter.setOperator(scope.operator)
+                filter.setConditions(scope.conditions)
+
+                ngModelCtrl.$setViewValue(filter)
+              }
+
+              // Update View Value
+              scope.$watch('operator', watchFilter)
+
+              // Update View Value
+              scope.$watch('conditions', watchFilter, true)
             }
           }
 
+          // Use the compile function from the RecursionHelper,
+          // And return the linking function(s) which it returns
+          return RecursionHelper.compile(element, link)
+        },
+        controller: 'inlineFilterCntl',
+        templateUrl: '/templates/partials/inline-filter.html'
+      }
+    }])
+    .controller('inlineFilterCntl', ['$scope', '$rootScope', 'inlineFilter', 'filterDefinition', 'filterWorkspace', 'validateFilterOptions',
+      function ($scope, $rootScope, inlineFilter, filterDefinition, filterWorkspace, validateFilterOptions) {
+        var filter,
+          src
+
+        // Default Options
+        var defaultOptions = {
+          attributesLoaded: false,
+          formId: null,
+          subfilters: true,
+          groups: true,
+          dynamicValues: true,
+          operators: inlineFilter.operators,
+          prefixBlacklist: [],
+          attributeBlacklist: [],
+          fieldTypeBlacklist: []
+        }
+
+        if (!$scope.options) {
+          $scope.options = {}
+        }
+
+        angular.forEach(defaultOptions, function (value, option) {
+          if (!$scope.options.hasOwnProperty(option)) {
+            $scope.options[option] = value
+          }
+        })
+
+        $scope.options.fieldTypeBlacklist = inlineFilter.combineFieldTypeBlacklist($scope.options.fieldTypeBlacklist)
+
+        // Default Scope
+        $scope = angular.extend($scope, {
+          users: [],
+          forms: null,
+          form: null,
+          attributeOptions: {},
+          sortedAttributes: [],
+          operatorConditionLabel: '',
+          subOptions: $scope.options,
+          addFilterSelector: ''
+        })
+
+        $scope.emptyCondition = {
+          prefix: '',
+          attribute: '',
+          value: ''
+        }
+
+        $rootScope.$watch('constants', function (constants) {
+          if (constants) {
+            $scope.constants = constants
+          }
+        })
+
+        // Current Condition Level
+        $scope.level = $scope.level || 1
+        $scope.level = parseInt($scope.level, 10)
+
+        // Top Level Counts
+        if ($scope.level == 1) {
+          $scope.counts = {
+            conditionCount: 0,
+            dynamicCount: 0
+          }
+        }
+
+        // Next Condition Level
+        $scope.nextLevel = $scope.level + 1
+
+        // Operator Options
+        if (!$scope.operatorOptions) {
+          $scope.operatorOptions = inlineFilter.getOperatorOptions($scope.options.operators)
+        }
+
+        // Record Attributes
+        $scope.recordAttributes = [
+          {
+            attribute: 'id',
+            name: 'Record ID',
+            type: 'calculated-field',
+            attributeOrder: 0
+          },
+          {
+            attribute: 'name',
+            name: 'Record Title',
+            attributeOrder: 1
+          },
+          {
+            attribute: 'folder.id',
+            name: 'Folder',
+            attributeOrder: 2
+          },
+          {
+            attribute: 'createdByUser.id',
+            name: 'Created By User',
+            attributeOrder: 3
+          },
+          {
+            attribute: 'created',
+            name: 'Date Created',
+            type: 'datetime',
+            attributeOrder: 4
+          },
+          {
+            attribute: 'modified',
+            name: 'Last Edited',
+            type: 'datetime',
+            attributeOrder: 5
+          },
+          {
+            attribute: 'isComplete',
+            name: 'Draft',
+            attributeOrder: 6
+          }
+        ]
+
+        // Prefix Options
+        var prefixOptions = [
+          {
+            prefix: '',
+            label: 'is',
+            type: 'String'
+          },
+          {
+            prefix: 'not',
+            label: 'isn\'t',
+            type: 'String'
+          },
+          {
+            prefix: 'min',
+            label: 'since'
+          },
+          {
+            prefix: 'max',
+            label: 'before'
+          },
+          {
+            prefix: 'contains',
+            label: 'contains',
+            type: 'String'
+          },
+          {
+            prefix: 'not-contains',
+            label: 'does not contain',
+            type: 'String'
+          },
+          {
+            prefix: 'starts-with',
+            label: 'starts with',
+            type: 'String'
+          },
+          {
+            prefix: 'ends-with',
+            label: 'ends with',
+            type: 'String'
+          },
+          {
+            prefix: 'in',
+            label: 'is any of',
+            type: 'String'
+          },
+          {
+            prefix: 'not-in',
+            label: 'is not any of',
+            type: 'String'
+          },
+          {
+            prefix: 'notexists',
+            label: 'exists',
+            type: 'String'
+          },
+          {
+            prefix: 'exists',
+            label: 'does not exist',
+            type: 'String'
+          },
+          {
+            prefix: 'min',
+            label: 'is greater than or equal to',
+            type: 'Number'
+          },
+          {
+            prefix: 'max',
+            label: 'is less than or equal to',
+            type: 'Number'
+          },
+          {
+            prefix: 'not-validates',
+            label: 'does not validate',
+            type: 'Validation'
+          }
+        ]
+
+        $scope.prefixOptions = []
+
+        angular.forEach(prefixOptions, function (option) {
+          if (skipBlacklistedPrefix(option.prefix)) {
+            return
+          }
+
+          $scope.prefixOptions.push(option)
+        })
+
+        /**
+       * Track condition - tracking function for ng-repeat. This lets us track distinct conditions without depending on $index, which
+       * changes if the position of a condition changes (e.g. because another condition was deleted), while also avoiding dependence
+       * on ng-repeat's built in indexing which adds an unwanted $$hashKey property to the conditions.
+       *
+       * @author	Paul W. Smith <paul@wizehive.com>
+       * @since	0.5.76
+       */
+        var trackedConditions = []
+        $scope.trackCondition = function (condition) {
+          if (trackedConditions.indexOf(condition) === -1) {
+            trackedConditions.push(condition)
+          }
+          return trackedConditions.indexOf(condition)
+        }
+
+        /**
+       * Sort conditions - so multiple conditions on the same attribute are displayed together
+       *
+       * @author	Anna Parks <anna@wizehive.com>
+       * @since	0.5.75-32
+       */
+        function sortConditions (conditions) {
+          if (conditions && conditions.length) {
+            conditions.sort(function (cond1, cond2) {
+              if (!cond1.attribute && !cond2.attribute) {
+              // sort AND before OR groups
+                if (cond1.and) {
+                  return -1
+                }
+
+                return 1
+              }
+
+              // put grouped conditions at the bottom
+              if (!cond1.attribute) {
+                return 1
+              }
+
+              if (!cond2.attribute) {
+                return -1
+              }
+
+              // Attribute is Missing/Deleted
+              if (!$scope.attributeOptions[cond1.attribute]) {
+                return 1
+              }
+
+              // Attribute is Missing/Deleted
+              if (!$scope.attributeOptions[cond2.attribute]) {
+                return -1
+              }
+
+              var attributeOption1 = $scope.attributeOptions[cond1.attribute]
+              var attributeOption2 = $scope.attributeOptions[cond2.attribute]
+              var order1 = attributeOption1.order
+              var order2 = attributeOption2.order
+
+              // sort by record attribute order
+              if (order1 === undefined && order2 === undefined) {
+                return attributeOption1.attributeOrder - attributeOption2.attributeOrder
+              }
+
+              // record attributes come before field attributes
+              if (order1 === undefined) {
+                return -1
+              }
+
+              if (order2 === undefined) {
+                return 1
+              }
+
+              // sort by field order
+              return order1 - order2
+            })
+          }
+
+          return conditions
+        }
+
+        /**
+       * Get Workspace Users
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{array}	users
+       * @returns	{array}
+       */
+        function getWorkspaceUsers (users) {
+          if ($scope.options.dynamicValues && users && users[0].id !== 'logged-in-user') {
+            users.unshift({
+              id: 'logged-in-user',
+              displayName: 'Logged In User'
+            })
+          }
+
+          return users
+        }
+
+        /**
+       * Set record attributes
+       */
+        function setRecordAttributes () {
+          angular.forEach($scope.recordAttributes, function (attribute) {
+            if (!attribute.type) {
+              attribute.type = attribute.attribute
+            }
+
+            pushAttribute(attribute)
+          })
+        }
+
+        function getWorkspace (skipCache) {
+          if (!$scope.options.formId && !$scope.options.workspaceId) {
+            return
+          }
+
+          return filterWorkspace.getWorkspace($scope.options, skipCache)
+            .then(setFormsAndUsers)
+            .then(function () {
+              $scope.attributesLoaded = true
+            })
+        }
+
+        /**
+       * Set Forms and Users
+       */
+        function setFormsAndUsers (workspace) {
+          $scope.users = getWorkspaceUsers(workspace.users)
+          $scope.forms = workspace.forms
+
+          if ($scope.model) {
+            validateFilterOptions($scope.model, $scope.options, $scope.forms)
+          }
+
+          if ($scope.options.formId) {
+          // Specific Form
+            $scope.form = workspace.forms[$scope.options.formId]
+
+            // Field Attributes
+            setFormFieldAttributes($scope.form.fields)
+
+            // Adds hasOne relations
+            setFormLinkedFormAttributes($scope.form.linkedForms)
+          }
+
+          return true
+        }
+
+        /**
+       * Set Form Field Attributes
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{array}	fields
+       */
+        function setFormFieldAttributes (fields) {
+          angular.forEach(fields, function (field) {
+            if (skipBlacklistedFieldType(field.type)) {
+              return
+            }
+
+            var attribute = angular.extend({}, field, {
+              attribute: 'field' + field.id,
+              name: field.name || field.label
+            })
+
+            pushAttribute(attribute)
+          })
+        }
+
+        /**
+       * Set Form Linked Form Attributes
+       *
+       * @since	0.5.75
+       * @param	{array}	linkedForms
+       */
+        function setFormLinkedFormAttributes (linkedForms) {
+          if (!$scope.options.subfilters) {
+            return
+          }
+
+          angular.forEach(linkedForms, function (form) {
+          // Make sure it also exists in the forms object. If the user
+            // doesn't have permission to the linked form, then it won't
+            // have been sent back from the API and we shouldn't show
+            // it in the filter.
+            if (form.type == 'hasOne' && $scope.forms[form.form.id]) {
+              var attribute = {
+                attribute: 'form' + form.form.id,
+                name: $scope.forms[form.form.id].name,
+                type: 'linked'
+              }
+
+              pushAttribute(attribute)
+            }
+          })
+        }
+
+        /**
+       * Skip Blacklisted Field Type
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	type
+       * @returns	{boolean}
+       */
+        function skipBlacklistedFieldType (type) {
+          return $scope.options.fieldTypeBlacklist.indexOf(type) !== -1
+        }
+
+        /**
+       * Skip Blacklisted Attribute
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	attribute
+       * @returns	{boolean}
+       */
+        function skipBlacklistedAttribute (attribute) {
+          return $scope.options.attributeBlacklist.indexOf(attribute) !== -1
+        }
+
+        /**
+       * Skip Blacklisted Prefix
+       *
+       * @author	Anna Parks <anna@wizehive.com>
+       * @since	0.5.85
+       * @param	{string}	prefix
+       * @returns	{boolean}
+       */
+        function skipBlacklistedPrefix (prefix) {
+          return $scope.options.prefixBlacklist.indexOf(prefix) !== -1
+        }
+
+        /**
+       * Push Attribute to Attributes Lists
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	attribute
+       */
+        function pushAttribute (attribute) {
+          if (skipBlacklistedAttribute(attribute.attribute)) {
+            return
+          }
+
+          $scope.attributeOptions[attribute.attribute] = attribute
+          $scope.sortedAttributes.push(attribute)
+        }
+
+        /**
+       * Update Filter Model
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       */
+        function updateFilter () {
+          src = filter.getFilter()
+
+          // Update model without breaking prototypical inheritance
+          angular.forEach(Object.keys($scope.model), function (key) {
+            delete $scope.model[key]
+          })
+
+          $scope.model = angular.extend($scope.model, src)
+        }
+
+        /**
+       * Set Operator
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	operator
+       */
+        function setOperator (operator) {
+          if (operator) {
+            setOperatorConditionLabel(operator)
+          }
+        }
+
+        /**
+       * Get Operator Option
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	operator
+       * @returns	{object}
+       */
+        function operatorOption (operator) {
+          var found = null
+          angular.forEach($scope.operatorOptions, function (option) {
+            if (option.operator == operator) {
+              found = option
+            }
+          })
+          return found
+        }
+
+        /**
+       * Set Operator Condition Label
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	operator
+       */
+        function setOperatorConditionLabel (operator) {
+          var option = operatorOption(operator)
+
+          $scope.operatorConditionLabel = option.conditionLabel
+        }
+
+        /**
+       * Add Filter Condition
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	condition
+       */
+        function addCondition (condition) {
+          $scope.conditions.push(condition)
+        }
+
+        /**
+       * Get Condition Count
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @returns	{int}
+       */
+        function getConditionCount () {
+          if ($scope.operator && $scope.conditions && $scope.conditions.length) {
+            var filter = filterDefinition()
+            filter.setOperator($scope.operator)
+            filter.setConditions($scope.conditions)
+
+            return filter.getConditionCount()
+          }
+
+          return 0
+        }
+
+        function setConditionCount (count) {
+          if ($scope.counts) {
+            count = count || getConditionCount()
+            $scope.counts.conditionCount = count
+          }
+        }
+
+        /**
+       * Show Add Sub Group
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @returns	{boolean}
+       */
+        $scope.showAddSubGroup = function () {
+          return $scope.options.groups && ($scope.level < 5)
+        }
+
+        /**
+       * Show Add Condition
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @returns	{boolean}
+       */
+        $scope.showAddCondition = function () {
+          return $scope.counts.conditionCount < 10
+        }
+
+        /**
+       * Add Attribute Condition
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	attribute
+       */
+        $scope.addAttributeCondition = function (attribute) {
+          var condition = inlineFilter.getEmptyCondition(attribute)
+          $scope.counts.conditionCount++
+          addCondition(condition)
+        }
+
+        /**
+       * Add Sub Filter Condition
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	attribute
+       */
+        $scope.addSubCondition = function (operator) {
+          var subfilter = inlineFilter.getEmptyFilter(operator)
+          subfilter = inlineFilter.mergeConditions(subfilter, [inlineFilter.getEmptyCondition()])
+
+          $scope.counts.conditionCount++
+          addCondition(subfilter)
+        }
+
+        /**
+       * Remove Condition
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{int}	index
+       */
+        $scope.removeCondition = function (index) {
+          $scope.conditions.splice(index, 1)
+
+          // Empty Conditions
+          if (!$scope.conditions.length) {
+            if ($scope.level === 1) {
+            // Top Level, Reset Default Condition
+              $scope.addAttributeCondition()
+            } else {
+            // Nested Condition, Remove from Parent
+              $scope.removeParentCondition()
+            }
+          }
+        }
+
+        /**
+       * Watch Filter Model
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	filter
+       */
+        $scope.$watch('conditions && options', function (allSet) {
+          if (allSet) {
+          // Empty Conditions
+            if (!$scope.conditions.length) {
+              $scope.conditions = $scope.conditions.concat([inlineFilter.getEmptyCondition()])
+            }
+
+            setAttributes(false).then(function () {
+              $scope.conditions = sortConditions($scope.conditions)
+
+              // Initial Condition Count
+              if ($scope.level === 1) {
+                setConditionCount()
+              }
+            })
+          }
+        })
+
+        /**
+       * Watch Options
+       */
+        $scope.$watch('options', function (options, oldOptions) {
+          if (!options || angular.equals(options, oldOptions)) {
+            return
+          }
+
+          // Reset Attributes if Options Change
+          setAttributes(false)
+        }, true)
+
+        /**
+       * Watch form fields updates
+       */
+        $scope.$on('form-fields-saved', function () {
+          setAttributes(true)
+        })
+
+        function setAttributes (skipCache) {
+          $scope.attributesLoaded = false
+          $scope.attributeOptions = {}
+          $scope.sortedAttributes = []
+          setRecordAttributes()
+          return getWorkspace(skipCache)
+        }
+
+        /**
+       * Watch Operator
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	operator
+       */
+        $scope.$watch('operator', setOperator)
+
+        /**
+       * Watch Add Filter Button
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{string}	selected
+       */
+        $scope.$watch('addFilterSelector', function (selected) {
+          if (!selected) {
+            return
+          }
+
+          var isSubCondition = inlineFilter.inOperators(selected)
+
+          if (isSubCondition) {
+            $scope.addSubCondition(selected)
+          } else {
+            $scope.addAttributeCondition(selected)
+          }
+
+          // Reset
+          $scope.addFilterSelector = ''
+        })
+      }])
+    .directive('znFilterValueIn', [function () {
+      return {
+        restrict: 'A',
+        scope: {
+          model: '=ngModel',
+          options: '='
+        },
+        require: 'ngModel',
+        link: function (scope, element, attrs, ngModelCtrl) {
+          scope.value = []
+
           // Convert Model Value to View Value
           ngModelCtrl.$formatters.push(function (modelValue) {
-            return findFolder(modelValue)
+            if (!modelValue) {
+              return
+            }
+
+            if (typeof modelValue === 'string') {
+              modelValue = JSON.parse(modelValue)
+            }
+
+            return modelValue.map(function (value) {
+              return {
+                id: value
+              }
+            })
           })
 
           // Convert View Value to Model Value
@@ -1495,77 +1441,598 @@ export function Directives (plugin) {
               return
             }
 
-            return viewValue.id
+            return viewValue.map(function (option) {
+              return option.id
+            })
           })
 
-          // Render to Directive Scope Variables
+          // Render to Scope Variables
           ngModelCtrl.$render = function () {
-            scope.folder = ngModelCtrl.$viewValue
+            scope.value = ngModelCtrl.$viewValue || []
           }
 
-          function setSearchPristine () {
-            var elemSearch = element.find('.folderSearch')
-
-            elemSearch
-              .toggleClass('ng-dirty', ngModelCtrl.$dirty)
-              .toggleClass('ng-pristine', ngModelCtrl.$pristine)
-          }
-
-          scope.changeFolder = function (folderId) {
-            setSearchPristine()
-
-            scope.onChangeFolder({ folderId: folderId })
-
-            var dropdownCtrl = element.find('[dropdown]').controller('dropdown')
-            dropdownCtrl.toggle()
-          }
-
-          /**
-                 * On Toggle Folder Dropdown
-                 *
-                 * @param	Boolean	open
-                 */
-          scope.onToggleFolderDropdown = function (open) {
-            if (open) {
-              scope.folderSearchInputFocus.enabled = true
-            } else {
-              setSearchPristine()
+          scope.$watch('value', function (value, previous) {
+            if (!value) {
+              return
             }
+
+            if (!angular.equals(value, previous)) {
+              ngModelCtrl.$setViewValue(value)
+            }
+          }, true)
+        },
+        controller: ['$scope', function ($scope) {
+          $scope.multiSelectOptions = []
+
+          $scope.multiSelectTranslations = {
+            buttonDefaultText: '',
+            checkAll: 'Select All',
+            uncheckAll: 'Select None',
+            selectionCount: 'selected',
+            dynamicButtonTextSuffix: 'selected'
           }
-        }
+
+          $scope.multiSelectExtras = {
+            enableSearch: false,
+            scrollable: true
+          }
+
+          function getMultiSelectOptions (options) {
+            if (!options) {
+              return
+            }
+
+            var keys = Object.keys(options)
+
+            return keys.map(function (value) {
+              return {
+                id: value,
+                label: options[value]
+              }
+            })
+          }
+
+          $scope.$watch('options', function (options) {
+            $scope.multiSelectOptions = getMultiSelectOptions(options)
+            $scope.multiSelectExtras.enableSearch = (options && Object.keys(options).length > 10)
+          })
+        }],
+        templateUrl: '/templates/partials/inline-filter-attribute-condition-in.html'
       }
     }])
-    .directive('markdown', ['$filter', '$compile', 'ExternalUrlPrompt',
-      function ($filter, $compile, ExternalUrlPrompt) {
-        return {
-          scope: {
-            markdown: '=markdown'
-          },
-          link: function (scope, element, attr) {
-            var znMarkdown = $filter('znMarkdown')
+    .directive('znFilterAttributeCondition', [function () {
+      return {
+        restrict: 'A',
+        scope: {
+          condition: '=',
+          conditions: '=',
+          prefixOptions: '=',
+          attributeOptions: '=',
+          sortedAttributes: '=',
+          operatorOptions: '=',
+          options: '=',
+          users: '=',
+          forms: '=',
+          form: '=',
+          nextLevel: '=',
+          subfilters: '=',
+          counts: '=',
+          removeParentCondition: '&'
+        },
+        controller: 'filterAttributeConditionCntl',
+        templateUrl: '/templates/partials/inline-filter-attribute-condition.html'
+      }
+    }])
+    .controller('filterAttributeConditionCntl', ['$scope', '$rootScope', 'znData', 'inlineFilter',
+      function ($scope, $rootScope, znData, inlineFilter) {
+        $scope.subFilterConditionAllowed = function () {
+          return $scope.subfilters &&
+            ($scope.subFilterBelowMaxCount()) &&
+            ($scope.subFilterBelowMaxLevel()) &&
+            !$scope.subFilterExistsForAttribute()
+        }
 
-            // This is redundant to the externalUrlPrompt directive, but the directive doesnt work in this context and this was the only approach where ngClick would work
+        $scope.subFilterExistsForAttribute = function () {
+          var exists = false
 
-            scope.openExternalUrlPrompt = function ($event) {
-              var url = angular.element($event.currentTarget).attr('href')
-
-              if (ExternalUrlPrompt.isExternalUrl(url)) {
-                $event.preventDefault()
-                ExternalUrlPrompt.open(url)
-              }
+          angular.forEach($scope.conditions, function (condition) {
+            if (condition.filter &&
+            condition.attribute == $scope.condition.attribute) {
+              exists = true
             }
+          })
 
-            scope.$watch('markdown', function (markdown) {
-              markdown = markdown || ''
+          return exists
+        }
 
-              markdown = znMarkdown(markdown)
+        $scope.subFilterBelowMaxCount = function () {
+          return $scope.counts.dynamicCount < 2
+        }
 
-              // Post Formatting
-              markdown = markdown.replace(/<a href="(.+)" target="_blank">/g, '<a href="$1" target="_blank" ng-click="openExternalUrlPrompt($event);">')
+        $scope.subFilterBelowMaxLevel = function () {
+          return $scope.nextLevel <= 5
+        }
 
-              element.html($compile(markdown)(scope))
+        $scope.isLinkedAttribute = function () {
+          return ($scope.attributeOptions[$scope.condition.attribute] &&
+          $scope.attributeOptions[$scope.condition.attribute].type == 'linked'
+          )
+        }
+
+        $scope.isCustomFilter = function () {
+          return $scope.condition.hasOwnProperty('filter')
+        }
+
+        $scope.notHasOneRelation = function () {
+          return ($scope.condition.attribute.indexOf('form') == -1)
+        }
+
+        $scope.isValidForFiltering = function () {
+          return ($scope.isLinkedAttribute() && $scope.attrIsValidForFiltering !== undefined) ? $scope.attrIsValidForFiltering : true
+        }
+
+        $scope.setAllowedPrefixes = function (allowedPrefixes, template) {
+          $scope.allowedPrefixes = []
+
+          var types = [] // e.g. Number, String
+
+          angular.forEach($scope.prefixOptions, function (option) {
+            if (allowedPrefixes.indexOf(option.label) !== -1) {
+              if (option.type && types.indexOf(option.type) == -1) {
+                types.push(option.type)
+              }
+
+              $scope.allowedPrefixes.push(angular.copy(option))
+            }
+          })
+
+          // don't group by type, if less than 2 types
+          if (types.length < 2 || template === 'number') {
+            angular.forEach($scope.allowedPrefixes, function (prefix) {
+              delete prefix.type
             })
           }
         }
+
+        // Set countries and states
+        $rootScope.$watch('states', function (states) {
+          if (states) {
+            $scope.states = states
+          }
+        })
+
+        $rootScope.$watch('countries', function (countries) {
+          if (countries) {
+            $scope.countries = countries
+          }
+        })
+
+        $rootScope.$watch('constants', function (constants) {
+          if (constants) {
+            $scope.constants = constants
+          }
+        })
+
+        var defaultPrefixes = ['is', 'isn\'t']
+        var stringPrefixes = ['contains', 'does not contain', 'starts with', 'ends with']
+        var validationPrefixes = ['does not validate']
+        var existPrefixes = ['exists', 'does not exist']
+        var numberPrefixes = ['is greater than or equal to', 'is less than or equal to']
+        var datePrefixes = ['is', 'since', 'before']
+        var datetimePrefixes = ['since', 'before']
+        var containsPrefixes = ['contains', 'does not contain']
+        var listPrefixes = ['is any of', 'is not any of']
+        var allWithListPrefixes = defaultPrefixes.concat(stringPrefixes, listPrefixes, existPrefixes, numberPrefixes)
+        var allPrefixes = defaultPrefixes.concat(stringPrefixes, existPrefixes, numberPrefixes)
+
+        $scope.fieldTypes = {
+          'text-input': {
+            prefixes: allPrefixes.concat(validationPrefixes)
+          },
+          'hidden-field': {
+            prefixes: allPrefixes
+          },
+          radio: {
+            prefixes: allWithListPrefixes,
+            template: 'single'
+          },
+          dropdown: {
+            prefixes: allWithListPrefixes
+          },
+          checkbox: {
+            prefixes: containsPrefixes.concat(listPrefixes, existPrefixes),
+            template: 'multiple'
+          },
+          name: {
+            prefixes: defaultPrefixes.concat(stringPrefixes)
+          },
+          'file-upload': {
+            prefixes: defaultPrefixes.concat(stringPrefixes, existPrefixes)
+          },
+          'text-area': {
+            prefixes: stringPrefixes.concat(existPrefixes)
+          },
+          date: {
+            prefixes: datePrefixes,
+            template: 'date'
+          },
+          datetime: {
+            prefixes: datetimePrefixes,
+            template: 'date'
+          },
+          'date-picker': {
+            prefixes: datePrefixes.concat(existPrefixes),
+            template: 'date'
+          },
+          year: {
+            prefixes: datePrefixes.concat(existPrefixes),
+            template: 'year'
+          },
+          linked: {
+            prefixes: defaultPrefixes.concat(existPrefixes, validationPrefixes),
+            template: 'linked'
+          },
+          member: {
+            template: 'member'
+          },
+          'createdByUser.id': {
+            prefixes: defaultPrefixes,
+            template: 'member'
+          },
+          'state-select': {
+            template: 'state-select'
+          },
+          'country-select': {
+            template: 'country-select'
+          },
+          'calculated-field': {
+            prefixes: defaultPrefixes.concat(numberPrefixes),
+            template: 'number'
+          },
+          'link-counter': {
+            prefixes: defaultPrefixes.concat(numberPrefixes),
+            template: 'number'
+          },
+          numeric: {
+            prefixes: defaultPrefixes.concat(numberPrefixes, existPrefixes),
+            template: 'numeric'
+          },
+          summary: {
+            prefixes: defaultPrefixes.concat(numberPrefixes, existPrefixes),
+            template: 'summary'
+          },
+          'folder.id': {
+            prefixes: defaultPrefixes,
+            template: 'folder'
+          },
+          isComplete: {
+            prefixes: ['is'],
+            template: 'draft'
+          }
+        }
+
+        $scope.selected = {}
+
+        $scope.validationValues = {
+          alpha: 'Alphabetic',
+          alphaNumeric: 'Alphanumeric',
+          emailAddress: 'Email Address',
+          numeric: 'Numeric',
+          zipCode: 'Zip',
+          // 'required': 'Required',
+          unique: 'No Duplicates'
+        }
+
+        $scope.existOptionSelected = function () {
+          return $scope.selected.prefix &&
+            $scope.selected.prefix.indexOf('exists') !== -1
+        }
+
+        $scope.validationOptionSelected = function () {
+          return $scope.selected.prefix &&
+            $scope.selected.prefix.indexOf('validates') !== -1
+        }
+
+        /**
+       * Upate Filter Condition Attribute & Value
+       * If Exists/Does Not Exists Options Selected
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       */
+        $scope.$watch('selected.prefix', function (prefix, oldPrefix) {
+          if (typeof prefix === 'string') {
+            if ($scope.existOptionSelected()) {
+              prefix = prefix.replace('exists', '')
+              $scope.condition.value = 'null'
+            } else if ($scope.condition.value == 'null') {
+              $scope.condition.value = ''
+            }
+
+            $scope.condition.prefix = prefix
+          }
+        })
+
+        /**
+       * When an Attribute is Chosen for First Time, Add to Conditions
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       */
+        $scope.$watch('selected.attribute', function (attribute) {
+          if (attribute) {
+            $scope.condition.attribute = attribute
+          }
+        })
+
+        /**
+       * Select Exists/Does Not Exists Dropdown Options
+       * Based on Existing Filter Condition
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       */
+        $scope.$watch('condition.prefix', function (prefix) {
+          if ((prefix === '' || prefix === 'not') &&
+          $scope.condition.value === 'null') {
+            prefix = prefix + 'exists'
+          }
+
+          $scope.selected.prefix = prefix
+        })
+
+        $scope.$watch('condition.attribute', function (attr, oldAttr) {
+          var allowedPrefixes = defaultPrefixes.concat(existPrefixes)
+          var type = ''
+          var template = 'default'
+
+          if (!attr) {
+            return $scope.setAllowedPrefixes(defaultPrefixes, template)
+          }
+
+          if ($scope.attributeOptions[attr] &&
+          $scope.attributeOptions[attr].type) {
+            type = $scope.attributeOptions[attr].type
+
+            if ($scope.fieldTypes[type] &&
+            $scope.fieldTypes[type].prefixes) {
+              allowedPrefixes = $scope.fieldTypes[type].prefixes
+              template = $scope.fieldTypes[type].template
+
+              if (type === 'dropdown') {
+                $scope.fieldTypes.dropdown.template = 'single'
+
+                if ($scope.attributeOptions[attr].settings.properties.multiple) {
+                  allowedPrefixes = $scope.fieldTypes.checkbox.prefixes
+                  $scope.fieldTypes.dropdown.template = 'multiple'
+                }
+              }
+            }
+          }
+
+          $scope.setAllowedPrefixes(allowedPrefixes, template)
+
+          if (oldAttr && oldAttr !== attr) { // reset value
+            if ($scope.isCustomFilter()) {
+              $scope.removeSubfilter()
+            } else {
+              $scope.condition.value = ''
+            }
+
+            $scope.selected.prefix = $scope.allowedPrefixes[0].prefix
+          }
+
+          // set prefix
+          var prefixFound = false
+
+          angular.forEach($scope.allowedPrefixes, function (prefix) {
+            if (prefix.prefix == $scope.selected.prefix) {
+              prefixFound = true
+            }
+          })
+
+          if (!prefixFound) {
+            $scope.selected.prefix = $scope.allowedPrefixes[0].prefix
+          }
+
+          $scope.initLinkedAttribute()
+        })
+
+        /**
+       * Set linked form name, custom filter options and filter prop if not set
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       * @param	{boolean}	disabled
+       */
+        $scope.initLinkedAttribute = function () {
+          if ($scope.isLinkedAttribute()) {
+            var linkedFormId
+
+            if ($scope.notHasOneRelation()) {
+              linkedFormId = $scope.attributeOptions[$scope.condition.attribute].settings.properties.linkedForm
+            } else {
+              linkedFormId = $scope.condition.attribute.substring(4)
+            }
+
+            // set empty subfilter if hasOne relation
+            if (!$scope.notHasOneRelation()) {
+              $scope.initSubFilter()
+            } else if ($scope.condition.value) {
+              $scope.selected.value = { id: $scope.condition.value }
+
+              znData('FormRecords').get({ id: $scope.condition.value, formId: linkedFormId }).then(function (record) {
+                $scope.selected.value.name = record.name
+              })
+            }
+            if ($scope.forms[linkedFormId]) {
+              $scope.linkedFormName = $scope.forms[linkedFormId].name
+              $scope.attrIsValidForFiltering = true
+            } else {
+              $scope.attrIsValidForFiltering = false
+            }
+
+            $scope.customFilterinlineOptions = angular.extend({},
+              $scope.options,
+              {
+                formId: linkedFormId
+              }
+            )
+          }
+        }
+
+        /**
+       * Disable/Enable Attributes
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       * @param	{boolean}	disabled
+       */
+        $scope.disableHasOneAttributes = function (disable) {
+          angular.forEach($scope.sortedAttributes, function (attribute, index) {
+            hasOneRelation = attribute.attribute.indexOf('form') === 0
+
+            if (hasOneRelation) {
+              $scope.sortedAttributes[index].disabled = !!disable
+            }
+          })
+        }
+
+        $scope.conditionType = function () {
+          return $scope.condition.hasOwnProperty('filter') ? 'custom-filter' : 'specific-record'
+        }
+
+        $scope.removeAttributeCondition = function () {
+          $scope.removeSubfilter()
+
+          $scope.counts.conditionCount--
+
+          $scope.removeParentCondition()
+        }
+
+        /**
+       * Remove Filter From Condition
+       * Decrement Dynamic Conditions Count
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       */
+        $scope.removeSubfilter = function () {
+          if ($scope.condition.filter) {
+            $scope.counts.dynamicCount--
+
+            // enable hasOne attributes
+            if ($scope.subFilterConditionAllowed()) {
+              $scope.disableHasOneAttributes(false)
+            }
+
+            delete $scope.condition.filter
+          }
+        }
+
+        /**
+       * Add Subfilter to Condition (or Reset if Changing Attributes)
+       * Increment Dynamic Conditions Count
+       *
+       * @author	Anna Parks
+       * @since	0.5.76
+       */
+        $scope.initSubFilter = function (oldAttr) {
+        // Sub Filter Not Allowed
+          if (!$scope.subFilterConditionAllowed()) {
+            return
+          }
+
+          // set empty filter
+          if (!$scope.condition.filter) {
+            var subfilter = inlineFilter.getDefaultFilter($scope.options.operators)
+
+            $scope.condition.filter = subfilter
+          }
+
+          // Increment Dynamic Count
+          $scope.counts.dynamicCount++
+
+          if ($scope.counts.dynamicCount >= 2) {
+            $scope.disableHasOneAttributes(true)
+          }
+
+          // remove condition attribute
+          delete $scope.condition.value
+
+          $scope.setAllowedPrefixes(defaultPrefixes)
+        }
+
+        $scope.setConditionType = function (type) {
+        // Unchanged
+          if (type == $scope.conditionType()) {
+            return
+          }
+
+          if (type == 'specific-record') {
+          // set empty value
+            $scope.condition.value = null
+
+            // remove filter
+            $scope.removeSubfilter()
+
+            $scope.setAllowedPrefixes(defaultPrefixes.concat(existPrefixes))
+            $scope.selected.prefix = $scope.allowedPrefixes[0].prefix
+          } else {
+            $scope.initSubFilter()
+          }
+        }
       }])
+    .directive('znFilterValue', ['$http', '$compile', '$templateCache', function ($http, $compile, $templateCache) {
+      return {
+        restrict: 'A',
+        scope: true,
+        controller: ['$scope', function ($scope) {
+          var unbind = $scope.$watch('condition.value', function (value) {
+            if (value !== undefined) {
+              if (value == null) {
+                $scope.condition.value = ''
+              }
+
+              unbind()
+            }
+          })
+
+          $scope.$watch('selected.value', function (value) {
+            if (value && value.id) {
+              $scope.condition.value = value.id
+            }
+          })
+        }],
+        link: function (scope, element, attrs) {
+          var baseUrl = '/templates/partials/filters-panel/'
+
+          function setElementHtml (content) {
+            element.html($compile(content)(scope.$new()))
+          }
+
+          scope.$watch(attrs.znFilterValue, function (valueTemplate) {
+            var templateUrl
+
+            if (valueTemplate) {
+              templateUrl = baseUrl + valueTemplate + '.html'
+            } else {
+              templateUrl = baseUrl + 'default.html'
+            }
+
+            var template = $templateCache.get(templateUrl)
+
+            if (template) {
+              setElementHtml(template)
+            } else {
+              $http.get(templateUrl).then(function (response) {
+                $templateCache.put(templateUrl, response.data)
+
+                setElementHtml(response.data)
+              })
+            }
+          })
+        }
+      }
+    }])
 }

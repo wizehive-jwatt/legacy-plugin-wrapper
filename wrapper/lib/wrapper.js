@@ -124,6 +124,13 @@ plugin.sizer = new ZnSize(async dimensions => {
     angular.element(document).injector().invoke(function ($compile) {
       var scope = angular.element(pluginDiv).scope()
       scope.type = context.pluginView.type
+      scope.title = context.plugin.title
+      scope.navigateTo = function(path) {
+
+        const method = 'navigate'
+        const args = [`workspaces/${context.workspace.id}${path}`]
+        client.call({ method: 'location', args: { method, args } })
+      }
       $compile(pluginDiv)(scope)
     })
 

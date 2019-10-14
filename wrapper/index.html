@@ -24,7 +24,14 @@
   <script src="plugin.js"></script>
 </head>
 
-<body>
+<body ng-class="type">
+  <nav ng-if="type === 'settings'">
+    <ul class="breadcrumbs">
+      <li class="breadcrumbs-icon"><i class="icon-cog"></i></li>
+      <li><a href="javascript:void(0)" ng-click="navigateTo('/admin')">Settings &amp; Tools</a></li>
+      <li><a href="javascript:void(0)">{{title}}</a></li>
+    </ul>
+  </nav>
   %PLUGIN_HTML%
 </body>
 

@@ -4,9 +4,11 @@
 body {
   background: none;
   overflow: auto;
+  position: relative;
 }
 
-.fullPage {
+.fullPage,
+.settings {
 	padding: .5em 48px 2em;
 }
 

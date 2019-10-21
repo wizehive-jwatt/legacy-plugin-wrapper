@@ -1,3 +1,9 @@
+import '../vendor/import-jquery'
+import 'jquery-ui'
+
+import 'angular'
+import 'angular-sanitize'
+import 'angular-local-storage'
 
 import BigNumber from 'bignumber.js'
 

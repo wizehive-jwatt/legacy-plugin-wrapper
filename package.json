@@ -36,6 +36,7 @@
     "angular-local-storage": "0.1.4",
     "angular-sanitize": "1.2.27",
     "angular-ui-ace": "github:Wizehive/ui-ace",
+    "angular-ui-sortable": "0.13.4",
     "angular-ui-tinymce": "github:Wizehive/ui-tinymce",
     "angularfire": "github:Wizehive/angularFire#v0.8.0",
     "bignumber.js": "github:Wizehive/bignumber.js#v2.4.0",

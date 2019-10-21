@@ -17,6 +17,8 @@ import 'angularfire'
 import showdown from 'showdown'
 import 'ng-showdown'
 
+import 'angular-ui-sortable'
+
 import 'tinymce/tinymce'
 import 'tinymce/plugins/autoresize'
 import 'tinymce/plugins/table'

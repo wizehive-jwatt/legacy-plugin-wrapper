@@ -1,3 +1,9 @@
+import '../vendor/import-jquery'
+import 'jquery-ui'
+
+import 'angular'
+import 'angular-sanitize'
+import 'angular-local-storage'
 
 import BigNumber from 'bignumber.js'
 
@@ -10,6 +16,8 @@ import 'angularfire'
 
 import showdown from 'showdown'
 import 'ng-showdown'
+
+import 'angular-ui-sortable'
 
 import 'tinymce/tinymce'
 import 'tinymce/plugins/autoresize'
@@ -31,6 +39,8 @@ import 'angular-bootstrap'
 import '../vendor/validators.js'
 
 import 'ui-select'
+
+import 'ng-dropdown-multiselect'
 
 import plugin from './lib/wrapper'
 import { Services } from './lib/services'

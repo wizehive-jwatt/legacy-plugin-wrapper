@@ -40,6 +40,8 @@ import '../vendor/validators.js'
 
 import 'ui-select'
 
+import 'ng-dropdown-multiselect'
+
 import plugin from './lib/wrapper'
 import { Services } from './lib/services'
 import { Filters } from './lib/filters'

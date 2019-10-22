@@ -142,7 +142,7 @@ plugin.sizer = new ZnSize(async dimensions => {
       'ngSanitize',
       // 'ngGrid',
       'ng-showdown',
-      // 'angularjs-dropdown-multiselect',
+      'angularjs-dropdown-multiselect',
       'ui.select',
       'ui.ace',
       'ui.sortable',

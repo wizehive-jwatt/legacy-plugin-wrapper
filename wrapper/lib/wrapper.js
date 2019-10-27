@@ -133,14 +133,14 @@ plugin.sizer = new ZnSize(async dimensions => {
         $compile(pluginDiv)(scope)
       })
 
-      plugin.sizer.autoSize()
+      context.pluginView.type === 'inline' && plugin.sizer.autoSize()
 
       return plugin
     }
 
     angular.module('wizehive', [
       'ngSanitize',
-      // 'ngGrid',
+      'ngGrid',
       'ng-showdown',
       'angularjs-dropdown-multiselect',
       'ui.select',

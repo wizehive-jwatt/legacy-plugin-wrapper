@@ -1,3 +1,4 @@
+/* eslint no-useless-escape: "off" */
 import BigNumber from 'bignumber.js'
 import moment from 'moment'
 
@@ -21,13 +22,13 @@ export function Filters (plugin) {
         }
       }
     })
-  /**
-   * Identity filter
-   *
-   * @param   {Object} User object
-   * @param   {Array} WorkspaceMembers array
-   * @returns {String} Format user name
-   */
+    /**
+     * Identity filter
+     *
+     * @param   {Object} User object
+     * @param   {Array} WorkspaceMembers array
+     * @returns {String} Format user name
+     */
     .filter('identity', function () {
       return function (input) {
         if (input) {
@@ -40,15 +41,15 @@ export function Filters (plugin) {
         return ''
       }
     })
-  /**
-   * Created By Filter
-   *
-   * If Real Person, User CreatedByUser o/w CreatedByClient
-   *
-   * @param   {Object} object
-   * @param   {Array} WorkspaceMembers array
-   * @returns {String} Formatted created by name
-   */
+    /**
+     * Created By Filter
+     *
+     * If Real Person, User CreatedByUser o/w CreatedByClient
+     *
+     * @param   {Object} object
+     * @param   {Array} WorkspaceMembers array
+     * @returns {String} Formatted created by name
+     */
     .filter('createdBy', ['identityFilter', function (identityFilter) {
       return function (input) {
         if (input) {
@@ -90,12 +91,12 @@ export function Filters (plugin) {
         }
       }
     }])
-  /**
-   * To string filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * To string filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('toString', function () {
       return function (input) {
         if (typeof input === 'undefined') {
@@ -104,12 +105,12 @@ export function Filters (plugin) {
         return input.toString()
       }
     })
-  /**
-   * Pluralize filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * Pluralize filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('pluralize', function () {
       return function (input) {
         input = input || ''
@@ -123,12 +124,12 @@ export function Filters (plugin) {
         return input
       }
     })
-  /**
-   * Singularize filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * Singularize filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('singularize', function () {
       return function (input) {
         input = input || ''
@@ -142,12 +143,12 @@ export function Filters (plugin) {
         return input
       }
     })
-  /**
-   * Capitalize filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * Capitalize filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('capitalize', function () {
       return function (input) {
         var parts = (input || '').split(' ')
@@ -158,16 +159,16 @@ export function Filters (plugin) {
         return parts.join(' ')
       }
     })
-  /**
-   * Article filter
-   *
-   * Returns 'a' or 'an' depending on the first letter of the following word
-   *
-   * @author Paul W. Smith <paul@wizehive.com>
-   * @since 0.5.25
-   * @param {Null|String} input Input text
-   * @returns {String}
-   */
+    /**
+     * Article filter
+     *
+     * Returns 'a' or 'an' depending on the first letter of the following word
+     *
+     * @author Paul W. Smith <paul@wizehive.com>
+     * @since 0.5.25
+     * @param {Null|String} input Input text
+     * @returns {String}
+     */
     .filter('article', function () {
       return function (input) {
         if (!input) {
@@ -179,23 +180,23 @@ export function Filters (plugin) {
         return 'a'
       }
     })
-  /**
-   * URL encode filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * URL encode filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('urlEncode', function () {
       return function (input) {
         return window.encodeURIComponent(input)
       }
     })
-  /**
-   * State filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * State filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('state', ['$rootScope', function ($rootScope) {
       return function (input) {
         if ($rootScope.states) {
@@ -209,12 +210,12 @@ export function Filters (plugin) {
         return input
       }
     }])
-  /**
-   * Country filter
-   *
-   * @author Unknown
-   * @since 0.x.x
-   */
+    /**
+     * Country filter
+     *
+     * @author Unknown
+     * @since 0.x.x
+     */
     .filter('country', ['$rootScope', function ($rootScope) {
       return function (input) {
         if ($rootScope.countries) {
@@ -228,21 +229,21 @@ export function Filters (plugin) {
         return input
       }
     }])
-  /**
-   * Field title - name if present, otherwise label
-   *
-   */
+    /**
+     * Field title - name if present, otherwise label
+     *
+     */
     .filter('formFieldTitle', function () {
       return function (field) {
         return ((field && field.name) || (field && field.label) || field)
       }
     })
-  /**
-   * Trim
-   *
-   * @see  https://github.com/willmendesneto/keepr/blob/master/app/scripts/filters/trim.js
-   * @since  0.5.41
-   */
+    /**
+     * Trim
+     *
+     * @see  https://github.com/willmendesneto/keepr/blob/master/app/scripts/filters/trim.js
+     * @since  0.5.41
+     */
     .filter('trim', function () {
       return function (input) {
         var str
@@ -257,12 +258,12 @@ export function Filters (plugin) {
         }
       }
     })
-  /**
-   * Camel case
-   *
-   * @see https://github.com/willmendesneto/keepr/blob/master/app/scripts/filters/camelcase.js
-   * @since  0.5.41
-   */
+    /**
+     * Camel case
+     *
+     * @see https://github.com/willmendesneto/keepr/blob/master/app/scripts/filters/camelcase.js
+     * @since  0.5.41
+     */
     .filter('camelCase', ['$filter', function ($filter) {
       return function (input, firstWordWithCase) {
         if (input === null || input === undefined) {
@@ -281,15 +282,15 @@ export function Filters (plugin) {
         })
       }
     }])
-  /**
-   * Numeric Value Filter
-   *
-   * Formats a numeric value for display based on form field settings
-   *
-   * @param   {number}
-   * @param   {object} form field
-   * @returns {string}
-   */
+    /**
+     * Numeric Value Filter
+     *
+     * Formats a numeric value for display based on form field settings
+     *
+     * @param   {number}
+     * @param   {object} form field
+     * @returns {string}
+     */
     .filter('znNumericValue', ['$filter', function ($filter) {
       return function (amount, field) {
         var properties = {}
@@ -336,12 +337,12 @@ export function Filters (plugin) {
         return result
       }
     }])
-  /**
-   * Currency Symbol from Currency Code
-   *
-   * @param   {string}  code
-   * @returns {string}  symbol
-   */
+    /**
+     * Currency Symbol from Currency Code
+     *
+     * @param   {string}  code
+     * @returns {string}  symbol
+     */
     .filter('znCurrencySymbol', ['$rootScope', function ($rootScope) {
       return function (code) {
         var symbol = ''
@@ -355,14 +356,14 @@ export function Filters (plugin) {
         return symbol
       }
     }])
-  /**
-   * Presentation Text Filter
-   *
-   * Formats a presentation text field for display based on form field settings
-   *
-   * @param   {object} form field
-   * @returns {string}
-   */
+    /**
+     * Presentation Text Filter
+     *
+     * Formats a presentation text field for display based on form field settings
+     *
+     * @param   {object} form field
+     * @returns {string}
+     */
     .filter('znPresentationalText', ['$filter', function ($filter) {
       return function (field) {
         var znMarkdown = $filter('znMarkdown')
@@ -387,14 +388,14 @@ export function Filters (plugin) {
         return result
       }
     }])
-  /**
-   * Markdown Filter
-   *
-   * Sanitize markdown, strips input HTML tags, and renders Markdown
-   *
-   * @param   {markdown}
-   * @returns {html}
-   */
+    /**
+     * Markdown Filter
+     *
+     * Sanitize markdown, strips input HTML tags, and renders Markdown
+     *
+     * @param   {markdown}
+     * @returns {html}
+     */
     .filter('znMarkdown', ['$filter', '$showdown', function ($filter, $showdown) {
       return function (markdown) {
         if (!markdown) {
@@ -406,9 +407,9 @@ export function Filters (plugin) {
         return $showdown.makeHtml(sanitizeMarkdown($showdown.stripHtml(markdown)))
       }
     }])
-  /**
-   * Sanitize un-safe/unsupported markdown
-   */
+    /**
+     * Sanitize un-safe/unsupported markdown
+     */
     .filter('sanitizeMarkdown', function () {
       return function (str) {
         if (!str) {
@@ -416,7 +417,7 @@ export function Filters (plugin) {
         }
 
         // Images
-        var escapeImageLink = function (wholeMatch, altText, linkId, url, width, height, m5, title) {
+        var escapeImageLink = function (wholeMatch /* , altText, linkId, url, width, height, m5, title */) {
           return '<div>' + wholeMatch + '</div>'
         }
 
@@ -433,7 +434,7 @@ export function Filters (plugin) {
         str = str.replace(shortcutImageRegex, escapeImageLink)
 
         // Auto Links
-        var escapeAutoLink = function (wholeMatch, leadingMagicChars, url, m2, m3, trailingPunctuation, trailingMagicChars) {
+        var escapeAutoLink = function (wholeMatch, leadingMagicChars, url /* , m2, m3, trailingPunctuation, trailingMagicChars */) {
           if (url && (url.substring(0, 8) === 'https://')) {
             return wholeMatch
           } else {
@@ -454,7 +455,7 @@ export function Filters (plugin) {
         str = str.replace(delimMailRegex, escapeAutoLink)
 
         // Links
-        var escapeLink = function (wholeMatch, linkText, linkId, url, m5, m6, title) {
+        var escapeLink = function (wholeMatch, linkText, linkId, url /* , m5, m6, title */) {
           if (url && (url.substring(0, 8) === 'https://')) {
             return wholeMatch
           } else {
@@ -474,12 +475,12 @@ export function Filters (plugin) {
         return str
       }
     })
-  /**
-   * Escape HTML Simplified Version. It only escape </> characters.
-   * It is based on the original escapeHtml filter but only escape the tags
-   * @author Juan Scarton <juan.scarton@wizehive.com>
-   * @since 2.5.1
-   */
+    /**
+     * Escape HTML Simplified Version. It only escape </> characters.
+     * It is based on the original escapeHtml filter but only escape the tags
+     * @author Juan Scarton <juan.scarton@wizehive.com>
+     * @since 2.5.1
+     */
     .filter('escapeHtmlTags', function () {
       var entityMap = {
         '<': '&lt;',
@@ -493,11 +494,11 @@ export function Filters (plugin) {
         })
       }
     })
-  /**
-   * Fix escaped HTML issues on ui-select
-   * @author Juan Scarton <juan.scarton@wizehive.com>
-   * @since 2.5.3
-   */
+    /**
+     * Fix escaped HTML issues on ui-select
+     * @author Juan Scarton <juan.scarton@wizehive.com>
+     * @since 2.5.3
+     */
     .filter('uiSelectHighlightFixChars', function () {
       return function (str) {
         return String(str)
@@ -530,11 +531,11 @@ export function Filters (plugin) {
           .replace(/\&\#x2<span class=\"ui-select-highlight\">F\;<\/span>/g, '\&#x2F;')
       }
     })
-  /**
-   * Escape HTML
-   *
-   * http://stackoverflow.com/questions/14462612/escape-html-text-in-an-angularjs-directive/28537958#28537958
-   */
+    /**
+     * Escape HTML
+     *
+     * http://stackoverflow.com/questions/14462612/escape-html-text-in-an-angularjs-directive/28537958#28537958
+     */
     .filter('escapeHtml', function () {
       var entityMap = {
         '&': '&amp;',
@@ -551,14 +552,14 @@ export function Filters (plugin) {
         })
       }
     })
-  /**
-   * Field Name
-   *
-   * Get field name from field id
-   *
-   * @param   {Number}	fieldId
-   * @returns {String}
-   */
+    /**
+     * Field Name
+     *
+     * Get field name from field id
+     *
+     * @param   {Number}	fieldId
+     * @returns {String}
+     */
     .filter('fieldName', function () {
       return function (fieldId) {
         return 'field' + fieldId

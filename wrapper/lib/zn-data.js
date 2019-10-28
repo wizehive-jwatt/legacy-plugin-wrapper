@@ -173,10 +173,8 @@ export function ZnData (plugin) {
           }
         }
 
-        // Set wheter it's a bulk or single operation
-        if (angular.isArray(data) || isMultiIdField || hasBatchConditions) {
-
-        } else if (method === 'put' && typeof params[idField] === 'undefined') {
+        // Set whether it's a bulk or single operation
+        if (!(angular.isArray(data) || isMultiIdField || hasBatchConditions) && method === 'put' && typeof params[idField] === 'undefined') {
           params[idField] = data[idField]
         }
 
@@ -309,7 +307,7 @@ export function ZnData (plugin) {
         const file = multipart.file
         const reader = new FileReader()
 
-        reader.onload = e => {
+        reader.onload = () => {
           const arrayBuffer = reader.result
           multipart.file = arrayBuffer
           multipart.name = file.name

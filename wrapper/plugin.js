@@ -42,6 +42,8 @@ import 'ui-select'
 
 import 'ng-dropdown-multiselect'
 
+import 'ng-grid/ng-grid-2.0.12.min.js'
+
 import plugin from './lib/wrapper'
 import { Services } from './lib/services'
 import { Filters } from './lib/filters'

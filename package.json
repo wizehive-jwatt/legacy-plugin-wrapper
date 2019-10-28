@@ -47,6 +47,7 @@
     "jquery-ui": "1.10.5",
     "moment": "github:Wizehive/moment#2.8.3",
     "ng-dropdown-multiselect": "1.0.1",
+    "ng-grid": "github:Wizehive/ng-grid#2.x",
     "ng-showdown": "github:Wizehive/ng-showdown#v1.1.0",
     "showdown": "github:Wizehive/showdown#1.7.6",
     "tinymce": "4.9.6",

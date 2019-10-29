@@ -5,7 +5,7 @@
   "scripts": {
     "start": "parcel serve wrapper/index.html --https",
     "build": "parcel build wrapper/index.html && cd dist && zip -r ../dist.zip .",
-    "lint": "npm run lint-wrapper && npm run lint-src",
+    "lint": "npm run lint-wrapper && npm run lint-src && echo 'Successfully Linted!'",
     "lint-wrapper": "eslint -c ./.eslintrc-wrapper.json ./wrapper",
     "lint-src": "eslint -c ./.eslintrc-src.json ./src"
   },

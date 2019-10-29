@@ -365,7 +365,7 @@ export function Directives (plugin) {
      * Draggable Wrapper Directive
      *
      */
-    .directive('uiDraggable', function () {
+    .directive('uiDraggable', [function () {
       return {
         restrict: 'A',
         link: function (scope, elem, attrs) {
@@ -378,14 +378,14 @@ export function Directives (plugin) {
           elem.draggable()
         }
       }
-    })
+    }])
     /**
      * checkList directive - allow multi value checkboxes to with with ng-model
      *
      * @author	Unknown
      * @since	0.5.x
      */
-    .directive('checkList', function () {
+    .directive('checkList', [function () {
       return {
         scope: {
           checkValue: '=',
@@ -460,7 +460,7 @@ export function Directives (plugin) {
           scope.$watch('list', setupHandler, true)
         }
       }
-    })
+    }])
     /**
      * Auto Expanding Textarea
      *
@@ -538,7 +538,7 @@ export function Directives (plugin) {
      * @since	0.5.79
      * @param	{string}	input value
      */
-    .directive('numbersOnly', function () {
+    .directive('numbersOnly', [function () {
       return {
         require: 'ngModel',
         link: function (scope, element, attr, ngModel) {
@@ -577,7 +577,7 @@ export function Directives (plugin) {
           })
         }
       }
-    })
+    }])
     .directive('znFormSelect', [function () {
       return {
         restrict: 'E',

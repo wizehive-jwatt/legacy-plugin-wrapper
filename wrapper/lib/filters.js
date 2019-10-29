@@ -11,7 +11,7 @@ export function Filters (plugin) {
    * @since 0.x.x
    */
   plugin
-    .filter('truncate', function () {
+    .filter('truncate', [function () {
       return function (input, length) {
         if (input) {
           length = length || 100
@@ -21,7 +21,7 @@ export function Filters (plugin) {
           return input
         }
       }
-    })
+    }])
     /**
      * Identity filter
      *
@@ -29,7 +29,7 @@ export function Filters (plugin) {
      * @param   {Array} WorkspaceMembers array
      * @returns {String} Format user name
      */
-    .filter('identity', function () {
+    .filter('identity', [function () {
       return function (input) {
         if (input) {
           switch (input.resource) {
@@ -40,7 +40,7 @@ export function Filters (plugin) {
 
         return ''
       }
-    })
+    }])
     /**
      * Created By Filter
      *
@@ -97,21 +97,21 @@ export function Filters (plugin) {
      * @author Unknown
      * @since 0.x.x
      */
-    .filter('toString', function () {
+    .filter('toString', [function () {
       return function (input) {
         if (typeof input === 'undefined') {
           return ''
         }
         return input.toString()
       }
-    })
+    }])
     /**
      * Pluralize filter
      *
      * @author Unknown
      * @since 0.x.x
      */
-    .filter('pluralize', function () {
+    .filter('pluralize', [function () {
       return function (input) {
         input = input || ''
         if (input.length) {
@@ -123,14 +123,14 @@ export function Filters (plugin) {
         }
         return input
       }
-    })
+    }])
     /**
      * Singularize filter
      *
      * @author Unknown
      * @since 0.x.x
      */
-    .filter('singularize', function () {
+    .filter('singularize', [function () {
       return function (input) {
         input = input || ''
         if (input.length) {
@@ -142,14 +142,14 @@ export function Filters (plugin) {
         }
         return input
       }
-    })
+    }])
     /**
      * Capitalize filter
      *
      * @author Unknown
      * @since 0.x.x
      */
-    .filter('capitalize', function () {
+    .filter('capitalize', [function () {
       return function (input) {
         var parts = (input || '').split(' ')
         var len = parts.length
@@ -158,7 +158,7 @@ export function Filters (plugin) {
         }
         return parts.join(' ')
       }
-    })
+    }])
     /**
      * Article filter
      *
@@ -169,7 +169,7 @@ export function Filters (plugin) {
      * @param {Null|String} input Input text
      * @returns {String}
      */
-    .filter('article', function () {
+    .filter('article', [function () {
       return function (input) {
         if (!input) {
           return ''
@@ -179,18 +179,18 @@ export function Filters (plugin) {
         }
         return 'a'
       }
-    })
+    }])
     /**
      * URL encode filter
      *
      * @author Unknown
      * @since 0.x.x
      */
-    .filter('urlEncode', function () {
+    .filter('urlEncode', [function () {
       return function (input) {
         return window.encodeURIComponent(input)
       }
-    })
+    }])
     /**
      * State filter
      *
@@ -233,18 +233,18 @@ export function Filters (plugin) {
      * Field title - name if present, otherwise label
      *
      */
-    .filter('formFieldTitle', function () {
+    .filter('formFieldTitle', [function () {
       return function (field) {
         return ((field && field.name) || (field && field.label) || field)
       }
-    })
+    }])
     /**
      * Trim
      *
      * @see  https://github.com/willmendesneto/keepr/blob/master/app/scripts/filters/trim.js
      * @since  0.5.41
      */
-    .filter('trim', function () {
+    .filter('trim', [function () {
       return function (input) {
         var str
         if (input === undefined || input === null) {
@@ -257,7 +257,7 @@ export function Filters (plugin) {
           return str.replace(/^\s+|\s+$/gm, '')
         }
       }
-    })
+    }])
     /**
      * Camel case
      *
@@ -410,7 +410,7 @@ export function Filters (plugin) {
     /**
      * Sanitize un-safe/unsupported markdown
      */
-    .filter('sanitizeMarkdown', function () {
+    .filter('sanitizeMarkdown', [function () {
       return function (str) {
         if (!str) {
           return ''
@@ -474,14 +474,14 @@ export function Filters (plugin) {
 
         return str
       }
-    })
+    }])
     /**
      * Escape HTML Simplified Version. It only escape </> characters.
      * It is based on the original escapeHtml filter but only escape the tags
      * @author Juan Scarton <juan.scarton@wizehive.com>
      * @since 2.5.1
      */
-    .filter('escapeHtmlTags', function () {
+    .filter('escapeHtmlTags', [function () {
       var entityMap = {
         '<': '&lt;',
         '>': '&gt;',
@@ -493,13 +493,13 @@ export function Filters (plugin) {
           return entityMap[s]
         })
       }
-    })
+    }])
     /**
      * Fix escaped HTML issues on ui-select
      * @author Juan Scarton <juan.scarton@wizehive.com>
      * @since 2.5.3
      */
-    .filter('uiSelectHighlightFixChars', function () {
+    .filter('uiSelectHighlightFixChars', [function () {
       return function (str) {
         return String(str)
           .replace(/\&<span class=\"ui-select-highlight\">(l|g)<\/span>t\;/g, '\&$1t;')
@@ -530,13 +530,13 @@ export function Filters (plugin) {
           .replace(/\&\#x2<span class=\"ui-select-highlight\">F<\/span>\;/g, '\&#x2F;')
           .replace(/\&\#x2<span class=\"ui-select-highlight\">F\;<\/span>/g, '\&#x2F;')
       }
-    })
+    }])
     /**
      * Escape HTML
      *
      * http://stackoverflow.com/questions/14462612/escape-html-text-in-an-angularjs-directive/28537958#28537958
      */
-    .filter('escapeHtml', function () {
+    .filter('escapeHtml', [function () {
       var entityMap = {
         '&': '&amp;',
         '<': '&lt;',
@@ -551,7 +551,7 @@ export function Filters (plugin) {
           return entityMap[s]
         })
       }
-    })
+    }])
     /**
      * Field Name
      *
@@ -560,11 +560,11 @@ export function Filters (plugin) {
      * @param   {Number}	fieldId
      * @returns {String}
      */
-    .filter('fieldName', function () {
+    .filter('fieldName', [function () {
       return function (fieldId) {
         return 'field' + fieldId
       }
-    })
+    }])
     .filter('znUserDate', ['userDateFilter', function (userDateFilter) {
       return userDateFilter
     }])

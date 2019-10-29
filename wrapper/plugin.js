@@ -5,6 +5,7 @@ import 'angular'
 import 'angular-sanitize'
 import 'angular-local-storage'
 
+/* eslint-disable no-unused-vars */
 import BigNumber from 'bignumber.js'
 
 import Handlebars from 'handlebars'
@@ -16,6 +17,7 @@ import 'angularfire'
 
 import showdown from 'showdown'
 import 'ng-showdown'
+/* eslint-enable no-unused-vars */
 
 import 'angular-ui-sortable'
 

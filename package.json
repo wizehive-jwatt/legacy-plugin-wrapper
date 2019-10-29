@@ -4,7 +4,10 @@
   "description": "Zengine v1 plugin wrapper for migrating to v2 environment",
   "scripts": {
     "start": "parcel serve wrapper/index.html --https",
-    "build": "parcel build wrapper/index.html && cd dist && zip -r ../dist.zip ."
+    "build": "parcel build wrapper/index.html && cd dist && zip -r ../dist.zip .",
+    "lint": "npm run lint-wrapper && npm run lint-src && echo 'Successfully Linted!'",
+    "lint-wrapper": "eslint -c ./.eslintrc-wrapper.json ./wrapper",
+    "lint-src": "eslint -c ./.eslintrc-src.json ./src"
   },
   "repository": {
     "type": "git",
@@ -24,6 +27,7 @@
   "homepage": "https://github.com/Wizehive/zengine-plugin-migrator#readme",
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^1.3.0",
+    "eslint": "^6.6.0",
     "parcel-bundler": "^1.12.3",
     "parcel-plugin-zengine-migrator": "github:ZengineHQ/parcel-plugin-zengine-migrator",
     "sass": "^1.22.12"
@@ -48,7 +52,7 @@
     "moment": "github:Wizehive/moment#2.8.3",
     "ng-dropdown-multiselect": "1.0.1",
     "ng-grid": "github:Wizehive/ng-grid#2.x",
-    "ng-showdown": "github:Wizehive/ng-showdown#v1.1.0",
+    "ng-showdown": "github:Wizehive/ng-showdown#1.1.2",
     "showdown": "github:Wizehive/showdown#1.7.6",
     "tinymce": "4.9.6",
     "ui-select": "github:Wizehive/ui-select",

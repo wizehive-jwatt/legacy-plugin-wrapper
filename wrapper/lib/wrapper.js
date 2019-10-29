@@ -13,7 +13,7 @@ Function.prototype.curry = Function.prototype.curry || function () {
   }
 }
 
-const client = new Client(document.location.ancestorOrigins[0])
+export const client = new Client(document.location.ancestorOrigins[0])
 client.start()
 
 const znResize = dimensions => client.call({ method: 'resize', args: { dimensions } })
@@ -320,7 +320,7 @@ plugin.sizer = new ZnSize(async dimensions => {
         }
 
         znWindow.location = {
-          reload: function (force) {
+          reload: function () {
             return client.call({ method: 'location', args: { method: 'reload', args: [] } })
           }
         }

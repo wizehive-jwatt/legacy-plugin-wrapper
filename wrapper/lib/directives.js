@@ -5,7 +5,7 @@ export function Directives (plugin) {
     .directive('dropdownMenuPersist', [function () {
       return {
         restrict: 'A',
-        link: function (scope, element, attrs) {
+        link: function (scope, element) {
           // Prevent menu from closing on inside click, unless it has persistent-close class
           // (to allow for save/cancel buttons)
           $(element).click(function (e) {
@@ -16,7 +16,7 @@ export function Directives (plugin) {
         }
       }
     }])
-    .directive('znFileSelect', ['$parse', '$rootScope', function ($parse, $rootScope) {
+    .directive('znFileSelect', ['$parse', function ($parse) {
       return {
         restrict: 'A',
         require: 'ngModel',
@@ -114,7 +114,7 @@ export function Directives (plugin) {
             }
 
             if (typeof value === 'object' &&
-                          value.constructor.name === 'Date') { // valid Date object
+              value.constructor.name === 'Date') { // valid Date object
               var apiDate = moment(scope.date)
 
               if (syncTime && moment(scope.time).isValid()) {
@@ -189,7 +189,7 @@ export function Directives (plugin) {
     .directive('esc', ['$rootScope', function ($rootScope) {
       return {
         restrict: 'A',
-        link: function (scope, element, attrs) {
+        link: function (scope, element) {
           $(element).keydown(function (evt) {
             if (evt.which === 27) {
               $rootScope.$apply(function () {
@@ -200,7 +200,7 @@ export function Directives (plugin) {
         }
       }
     }])
-    .directive('validate', ['$compile', function ($compile) {
+    .directive('validate', [function () {
       return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -208,30 +208,39 @@ export function Directives (plugin) {
           var controlNames = attrs.validate.split(',')
           var form
           var controls = []
+
           function evaluate (submitted) {
             var valid = true
+
             if (submitted) {
               angular.forEach(controls, function (control) {
                 valid = valid && control.$valid
               })
             }
+
             element[valid ? 'removeClass' : 'addClass']('error')
           }
+
           if (parents.length) {
             var formName = parents.first().attr('name')
+
             if (formName && scope[formName]) {
               form = scope[formName]
+
               angular.forEach(controlNames, function (controlName) {
                 if (controlName in form) {
                   controls.push(form[controlName])
-                  scope.$watch(formName + '.' + controlName + '.$valid', function (valid) {
+
+                  scope.$watch(formName + '.' + controlName + '.$valid', function () {
                     evaluate(form.submitted)
                   })
+
                   $('[name=' + controlName + ']', element).change(function () {
                     $(this).trigger('input')
                   })
                 }
               })
+
               scope.$watch(formName + '.submitted', function (submitted) {
                 evaluate(submitted)
               })
@@ -251,13 +260,13 @@ export function Directives (plugin) {
             var errorMessages = {}
             var p, x
             for (var i in error) {
-              if (error.hasOwnProperty(i)) {
+              if (Object.prototype.hasOwnProperty.call(error, i)) {
                 if (!angular.isObject(error[i]) || angular.isArray(error[i])) {
                   errorMessages[i] = error[i]
                 } else {
                   p = serializeError(error[i])
                   for (x in p) {
-                    if (p.hasOwnProperty(x)) {
+                    if (Object.prototype.hasOwnProperty.call(p, x)) {
                       errorMessages[i + '.' + x] = p[x]
                     }
                   }
@@ -296,7 +305,7 @@ export function Directives (plugin) {
               // Variable x is the content of the error
               // Variable p is the current value of the field with error
               for (var path in errors) {
-                if (errors.hasOwnProperty(path)) {
+                if (Object.prototype.hasOwnProperty.call(errors, path)) {
                   var x, field, fieldElement, fieldContainer,
                     fieldName, errorContainer, controls
 
@@ -359,7 +368,7 @@ export function Directives (plugin) {
     .directive('uiDraggable', function () {
       return {
         restrict: 'A',
-        link: function (scope, elem, attrs, ctrl) {
+        link: function (scope, elem, attrs) {
           scope.$watch(attrs.uiDraggable, function (newVal) {
             angular.forEach(newVal, function (value, key) {
               elem.draggable('option', key, value)
@@ -554,7 +563,7 @@ export function Directives (plugin) {
               return value
             }
 
-            var matches = input.match(/^[\-\d]+\.?[\-\d]*/)
+            var matches = input.match(/^[-\d]+\.?[-\d]*/)
             var newValue = (matches && matches.length && matches[0]) || ''
 
             newValue = toggleNegativeValue(newValue)
@@ -584,7 +593,7 @@ export function Directives (plugin) {
           scope.form = {}
 
           scope.$watch('ngDisabled', function (ngDisabled) {
-            scope.disabled = (!ngDisabled && !attr.hasOwnProperty('ngDisabled')) ? false : ngDisabled || true
+            scope.disabled = (!ngDisabled && !Object.prototype.hasOwnProperty.call(attr, 'ngDisabled')) ? false : ngDisabled || true
           })
 
           // update zn-form-select ngModel
@@ -634,7 +643,7 @@ export function Directives (plugin) {
           var link = {
             post: function (scope, element, attrs, ngModelCtrl) {
               scope.operator = null,
-              scope.conditions = []
+                scope.conditions = []
 
               function getOperators () {
                 return scope.options.operators || inlineFilter.operators
@@ -700,9 +709,6 @@ export function Directives (plugin) {
     }])
     .controller('inlineFilterCntl', ['$scope', '$rootScope', 'inlineFilter', 'filterDefinition', 'filterWorkspace', 'validateFilterOptions',
       function ($scope, $rootScope, inlineFilter, filterDefinition, filterWorkspace, validateFilterOptions) {
-        var filter,
-          src
-
         // Default Options
         var defaultOptions = {
           attributesLoaded: false,
@@ -721,7 +727,7 @@ export function Directives (plugin) {
         }
 
         angular.forEach(defaultOptions, function (value, option) {
-          if (!$scope.options.hasOwnProperty(option)) {
+          if (!Object.prototype.hasOwnProperty.call($scope.options, option)) {
             $scope.options[option] = value
           }
         })
@@ -927,7 +933,7 @@ export function Directives (plugin) {
           if (conditions && conditions.length) {
             conditions.sort(function (cond1, cond2) {
               if (!cond1.attribute && !cond2.attribute) {
-              // sort AND before OR groups
+                // sort AND before OR groups
                 if (cond1.and) {
                   return -1
                 }
@@ -1037,7 +1043,7 @@ export function Directives (plugin) {
           }
 
           if ($scope.options.formId) {
-          // Specific Form
+            // Specific Form
             $scope.form = workspace.forms[$scope.options.formId]
 
             // Field Attributes
@@ -1084,7 +1090,7 @@ export function Directives (plugin) {
           }
 
           angular.forEach(linkedForms, function (form) {
-          // Make sure it also exists in the forms object. If the user
+            // Make sure it also exists in the forms object. If the user
             // doesn't have permission to the linked form, then it won't
             // have been sent back from the API and we shouldn't show
             // it in the filter.
@@ -1152,22 +1158,23 @@ export function Directives (plugin) {
           $scope.sortedAttributes.push(attribute)
         }
 
+        // Unused
         /**
        * Update Filter Model
        *
        * @author	Wes DeMoney <wes@wizehive.com>
        * @since	0.5.75
        */
-        function updateFilter () {
-          src = filter.getFilter()
+        // function updateFilter () {
+        //   src = filter.getFilter()
 
-          // Update model without breaking prototypical inheritance
-          angular.forEach(Object.keys($scope.model), function (key) {
-            delete $scope.model[key]
-          })
+        //   // Update model without breaking prototypical inheritance
+        //   angular.forEach(Object.keys($scope.model), function (key) {
+        //     delete $scope.model[key]
+        //   })
 
-          $scope.model = angular.extend($scope.model, src)
-        }
+        //   $scope.model = angular.extend($scope.model, src)
+        // }
 
         /**
        * Set Operator
@@ -1313,10 +1320,10 @@ export function Directives (plugin) {
           // Empty Conditions
           if (!$scope.conditions.length) {
             if ($scope.level === 1) {
-            // Top Level, Reset Default Condition
+              // Top Level, Reset Default Condition
               $scope.addAttributeCondition()
             } else {
-            // Nested Condition, Remove from Parent
+              // Nested Condition, Remove from Parent
               $scope.removeParentCondition()
             }
           }
@@ -1331,7 +1338,7 @@ export function Directives (plugin) {
        */
         $scope.$watch('conditions && options', function (allSet) {
           if (allSet) {
-          // Empty Conditions
+            // Empty Conditions
             if (!$scope.conditions.length) {
               $scope.conditions = $scope.conditions.concat([inlineFilter.getEmptyCondition()])
             }
@@ -1537,7 +1544,7 @@ export function Directives (plugin) {
 
           angular.forEach($scope.conditions, function (condition) {
             if (condition.filter &&
-            condition.attribute == $scope.condition.attribute) {
+              condition.attribute == $scope.condition.attribute) {
               exists = true
             }
           })
@@ -1555,12 +1562,12 @@ export function Directives (plugin) {
 
         $scope.isLinkedAttribute = function () {
           return ($scope.attributeOptions[$scope.condition.attribute] &&
-          $scope.attributeOptions[$scope.condition.attribute].type == 'linked'
+            $scope.attributeOptions[$scope.condition.attribute].type == 'linked'
           )
         }
 
         $scope.isCustomFilter = function () {
-          return $scope.condition.hasOwnProperty('filter')
+          return Object.prototype.hasOwnProperty.call($scope.condition, 'filter')
         }
 
         $scope.notHasOneRelation = function () {
@@ -1740,7 +1747,7 @@ export function Directives (plugin) {
        * @author	Anna Parks
        * @since	0.5.76
        */
-        $scope.$watch('selected.prefix', function (prefix, oldPrefix) {
+        $scope.$watch('selected.prefix', function (prefix) {
           if (typeof prefix === 'string') {
             if ($scope.existOptionSelected()) {
               prefix = prefix.replace('exists', '')
@@ -1774,7 +1781,7 @@ export function Directives (plugin) {
        */
         $scope.$watch('condition.prefix', function (prefix) {
           if ((prefix === '' || prefix === 'not') &&
-          $scope.condition.value === 'null') {
+            $scope.condition.value === 'null') {
             prefix = prefix + 'exists'
           }
 
@@ -1791,11 +1798,11 @@ export function Directives (plugin) {
           }
 
           if ($scope.attributeOptions[attr] &&
-          $scope.attributeOptions[attr].type) {
+            $scope.attributeOptions[attr].type) {
             type = $scope.attributeOptions[attr].type
 
             if ($scope.fieldTypes[type] &&
-            $scope.fieldTypes[type].prefixes) {
+              $scope.fieldTypes[type].prefixes) {
               allowedPrefixes = $scope.fieldTypes[type].prefixes
               template = $scope.fieldTypes[type].template
 
@@ -1890,7 +1897,7 @@ export function Directives (plugin) {
        */
         $scope.disableHasOneAttributes = function (disable) {
           angular.forEach($scope.sortedAttributes, function (attribute, index) {
-            hasOneRelation = attribute.attribute.indexOf('form') === 0
+            var hasOneRelation = attribute.attribute.indexOf('form') === 0
 
             if (hasOneRelation) {
               $scope.sortedAttributes[index].disabled = !!disable
@@ -1899,7 +1906,7 @@ export function Directives (plugin) {
         }
 
         $scope.conditionType = function () {
-          return $scope.condition.hasOwnProperty('filter') ? 'custom-filter' : 'specific-record'
+          return Object.prototype.hasOwnProperty.call($scope.condition, 'filter') ? 'custom-filter' : 'specific-record'
         }
 
         $scope.removeAttributeCondition = function () {
@@ -1937,8 +1944,8 @@ export function Directives (plugin) {
        * @author	Anna Parks
        * @since	0.5.76
        */
-        $scope.initSubFilter = function (oldAttr) {
-        // Sub Filter Not Allowed
+        $scope.initSubFilter = function () {
+          // Sub Filter Not Allowed
           if (!$scope.subFilterConditionAllowed()) {
             return
           }
@@ -1964,13 +1971,13 @@ export function Directives (plugin) {
         }
 
         $scope.setConditionType = function (type) {
-        // Unchanged
+          // Unchanged
           if (type == $scope.conditionType()) {
             return
           }
 
           if (type == 'specific-record') {
-          // set empty value
+            // set empty value
             $scope.condition.value = null
 
             // remove filter

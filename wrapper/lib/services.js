@@ -1,3 +1,4 @@
+import { client } from './wrapper'
 
 export function Services (plugin) {
   plugin
@@ -43,14 +44,14 @@ export function Services (plugin) {
       }
     }])
     .factory('filterDefinition', ['inlineFilter', function filterDefinitionFactory (inlineFilter) {
-    /**
-     * Get Operator
-     *
-     * @author	Wes DeMoney <wes@wizehive.com>
-     * @since	0.5.75
-     * @param	{object}	filter
-     * @returns	{string}
-     */
+      /**
+       * Get Operator
+       *
+       * @author	Wes DeMoney <wes@wizehive.com>
+       * @since	0.5.75
+       * @param	{object}	filter
+       * @returns	{string}
+       */
       function getOperator (filter) {
         return inlineFilter.getOperator(filter)
       }
@@ -85,7 +86,7 @@ export function Services (plugin) {
      * @returns	{object}	definition
      */
       var filterDef = function (filter) {
-      // Definition Object
+        // Definition Object
         var def = {}
 
         /**
@@ -133,7 +134,7 @@ export function Services (plugin) {
           var emptyCondition = inlineFilter.getEmptyCondition()
 
           angular.forEach(conditions, function (condition, key) {
-          // Ignore Empty Conditions
+            // Ignore Empty Conditions
             if (angular.equals(condition, emptyCondition)) {
               return
             }
@@ -146,7 +147,7 @@ export function Services (plugin) {
 
               condition.filter = subFilterDef.getFilter()
             } else if (condition.value && condition.value.split &&
-            condition.value.split('|').length > 1) {
+              condition.value.split('|').length > 1) {
               var operator = 'or'
 
               if (condition.prefix.indexOf('not') == 0) {
@@ -159,7 +160,7 @@ export function Services (plugin) {
               var values = condition.value.split('|')
 
               angular.forEach(values, function (value) {
-                pipedFilterCondition = {
+                var pipedFilterCondition = {
                   prefix: condition.prefix,
                   attribute: condition.attribute,
                   value: value
@@ -232,7 +233,7 @@ export function Services (plugin) {
               count += condition.getConditionCount()
             } else if (condition.or || condition.and) {
               count += condition.or ? def.getRecursiveConditionCount(condition.or) : def.getRecursiveConditionCount(condition.and)
-            }	else {
+            } else {
               count++
             }
           })
@@ -252,7 +253,7 @@ export function Services (plugin) {
           angular.forEach(arr, function (condition) {
             if (condition.or || condition.and) {
               count += condition.or ? def.getRecursiveConditionCount(condition.or) : def.getRecursiveConditionCount(condition.and)
-            }	else {
+            } else {
               count++
             }
           })
@@ -305,7 +306,7 @@ export function Services (plugin) {
           var index = 0
 
           if (isNaN(options)) {
-          // Find Condition Index
+            // Find Condition Index
           } else {
             index = options
           }
@@ -338,12 +339,12 @@ export function Services (plugin) {
 
       return filterDef
     }])
-  /**
-   * Inline Filter Operators
-   *
-   * @since	0.5.75
-   * @param	{array}
-   */
+    /**
+     * Inline Filter Operators
+     *
+     * @since	0.5.75
+     * @param	{array}
+     */
     .value('inlineFilterOperators', [
       {
         operator: 'and',
@@ -356,14 +357,14 @@ export function Services (plugin) {
         selectorLabel: 'Any'
       }
     ])
-  /**
-   * Inline Filter Service
-   *
-   * Copyright (c) WizeHive - http://www.wizehive.com
-   *
-   * @author	Wes DeMoney <wes@wizehive.com>
-   * @since	0.5.75
-   */
+    /**
+     * Inline Filter Service
+     *
+     * Copyright (c) WizeHive - http://www.wizehive.com
+     *
+     * @author	Wes DeMoney <wes@wizehive.com>
+     * @since	0.5.75
+     */
     .service('inlineFilter', ['inlineFilterOperators', '$rootScope',
       function inlineFilterService (inlineFilterOperators, $rootScope) {
         var svc = this
@@ -414,8 +415,8 @@ export function Services (plugin) {
      * @returns	{string}
      */
         svc.getOperator = function (filter) {
-          if (filter && filter.hasOwnProperty('and')) return 'and'
-          if (filter && filter.hasOwnProperty('or')) return 'or'
+          if (filter && Object.prototype.hasOwnProperty.call(filter, 'and')) return 'and'
+          if (filter && Object.prototype.hasOwnProperty.call(filter, 'or')) return 'or'
           return false
         }
 
@@ -577,11 +578,11 @@ export function Services (plugin) {
         }
       }])
     .service('filterWorkspace', ['$rootScope', function filterWorkspaceService ($rootScope) {
-    /**
-     * Workspace Data Indexed by Workspace Id
-     *
-     * @type	{object}
-     */
+      /**
+       * Workspace Data Indexed by Workspace Id
+       *
+       * @type	{object}
+       */
       var workspaces = {}
 
       /**
@@ -590,9 +591,7 @@ export function Services (plugin) {
      * @param	{object}	options
      * @returns	{promise}
      */
-      async function getWorkspace (options, skipCache) {
-        var workspaceLoaded
-
+      async function getWorkspace (/* options, skipCache */) {
         if ($rootScope.workspace) {
           return $rootScope.workspace
         }
@@ -610,9 +609,11 @@ export function Services (plugin) {
      */
       function indexWorkspaceForms (workspaceForms) {
         var forms = {}
+
         angular.forEach(workspaceForms, function (form) {
           forms[form.id] = form
         })
+
         return forms
       }
 
@@ -705,11 +706,11 @@ export function Services (plugin) {
         var operator = getOperator(filter)
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             optionsError('Subfilters is not allowed by filter options')
           }
 
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             validateSubfilters(condition, subfilters)
           }
         })
@@ -723,11 +724,11 @@ export function Services (plugin) {
         var operator = getOperator(filter)
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             optionsError('Groups is not allowed by filter options')
           }
 
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             validateGroups(condition.filter, groups)
           }
         })
@@ -741,15 +742,15 @@ export function Services (plugin) {
         var operator = getOperator(filter)
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('value') && condition.value === 'logged-in-user') {
+          if (Object.prototype.hasOwnProperty.call(condition, 'value') && condition.value === 'logged-in-user') {
             optionsError('Dynamic value "logged-in-user" is not allowed by filter options')
           }
 
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             validateDynamicValues(condition, dynamicValues)
           }
 
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             validateDynamicValues(condition.filter, dynamicValues)
           }
         })
@@ -787,11 +788,11 @@ export function Services (plugin) {
         }
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             validateOperators(condition, operators)
           }
 
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             validateOperators(condition.filter, operators)
           }
         })
@@ -809,15 +810,15 @@ export function Services (plugin) {
         var operator = getOperator(filter)
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('attribute') && attributeBlacklist.indexOf(condition.attribute) === 0) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'attribute') && attributeBlacklist.indexOf(condition.attribute) === 0) {
             optionsError('Attribute "' + condition.attribute + '" is not allowed by filter options')
           }
 
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             validateAttributesBlacklist(condition, attributeBlacklist)
           }
 
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             validateAttributesBlacklist(condition.filter, attributeBlacklist)
           }
         })
@@ -832,25 +833,25 @@ export function Services (plugin) {
           return
         }
 
-        if (!forms.hasOwnProperty(formId)) {
+        if (!Object.prototype.hasOwnProperty.call(forms, formId)) {
           return
         }
 
         var operator = getOperator(filter)
 
         angular.forEach(filter[operator], function (condition) {
-          if (condition.hasOwnProperty('attribute') && forms[formId].hasOwnProperty('fields')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'attribute') && Object.prototype.hasOwnProperty.call(forms[formId], 'fields')) {
             var type = getAttributeType(condition.attribute, forms[formId].fields)
             if (undefined !== type && fieldTypeBlacklist.indexOf(type) === 0) {
               optionsError('Attribute "' + condition.attribute + '" which have type "' + type + '" is not allowed by filter options')
             }
           }
 
-          if (condition.hasOwnProperty('and') || condition.hasOwnProperty('or')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'and') || Object.prototype.hasOwnProperty.call(condition, 'or')) {
             validateFieldTypesBlacklist(condition, fieldTypeBlacklist, formId, forms)
           }
 
-          if (condition.hasOwnProperty('filter')) {
+          if (Object.prototype.hasOwnProperty.call(condition, 'filter')) {
             var subfilterFormId = condition.attribute.substring(4)
             validateFieldTypesBlacklist(condition.filter, fieldTypeBlacklist, subfilterFormId, forms)
           }
@@ -872,23 +873,23 @@ export function Services (plugin) {
           return
         }
 
-        if (options.hasOwnProperty('operators')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'operators')) {
           validateOperators(filter, options.operators)
         }
 
-        if (options.hasOwnProperty('subfilters')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'subfilters')) {
           validateSubfilters(filter, options.subfilters)
         }
 
-        if (options.hasOwnProperty('groups')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'groups')) {
           validateGroups(filter, options.groups)
         }
 
-        if (options.hasOwnProperty('dynamicValues')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'dynamicValues')) {
           validateDynamicValues(filter, options.dynamicValues)
         }
 
-        if (options.hasOwnProperty('attributeBlacklist')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'attributeBlacklist')) {
           validateAttributesBlacklist(filter, options.attributeBlacklist)
         }
 
@@ -896,7 +897,7 @@ export function Services (plugin) {
           return
         }
 
-        if (options.hasOwnProperty('fieldTypeBlacklist')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'fieldTypeBlacklist')) {
           validateFieldTypesBlacklist(filter, options.fieldTypeBlacklist, options.formId, forms)
         }
       }

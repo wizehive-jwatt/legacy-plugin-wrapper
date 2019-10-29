@@ -8,7 +8,12 @@
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly",
         "angular": "readonly",
-        "$": "readonly"
+        "$": "readonly",
+        "Firebase": "readonly",
+        "tinyMCE": "readonly",
+        "tinymce": "readonly",
+        "ace": "readonly",
+        "ngGrid": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018,

@@ -340,7 +340,5 @@ export function ZnData (plugin) {
 
       return resource.apply(this, args)
     }
-  }
-
-  ])
+  }])
 }

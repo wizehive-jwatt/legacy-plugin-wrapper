@@ -121,7 +121,7 @@ plugin.sizer = new ZnSize(async dimensions => {
 
       angular.element(document.body).append(pluginDiv)
 
-      angular.element(document).injector().invoke(function ($compile) {
+      angular.element(document).injector().invoke(['$compile', function ($compile) {
         var scope = angular.element(pluginDiv).scope()
         scope.type = context.pluginView.type
         scope.title = context.plugin.title
@@ -131,7 +131,7 @@ plugin.sizer = new ZnSize(async dimensions => {
           client.call({ method: 'location', args: { method, args } })
         }
         $compile(pluginDiv)(scope)
-      })
+      }])
 
       context.pluginView.type === 'inline' && plugin.sizer.autoSize()
 

@@ -47,7 +47,7 @@ If you just want a snapshot of the steps, walk through this first, and consult t
     Please Note:
 
     - The migrator automatically updates your source code in a few specific ways. See List of [Migration Code Mods](#migration-code-mods) for more details.
-    - There are some [build time nuances](#build-process-nuances) that should also read about
+    - There are also some [build time nuances](#build-process-nuances) you should read about
 
 4. Configure your plugin's live mode to point to `https://localhost:1234` in the Zengine UI
 

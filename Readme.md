@@ -110,8 +110,6 @@ If you just want a snapshot of the steps, walk through this first, and consult t
         }])
         ```
 
-    - href with relative paths (a scan of all the plugin code only showed a couple plugins doing that and none of them were supported/in use, but possible usage was introduced after the last scan)
-
     - `znModal` or custom modals
     
     - Relying on hardcoded plugin namespaces will break because of the namespace migration from camelCase to kebab-case
@@ -139,7 +137,7 @@ If you just want a snapshot of the steps, walk through this first, and consult t
 
         - `$scope.$parent`: any attempt to access `$scope` outside of the plugin context is restricted now, so you'll just have to figure out a more creative (and secure) means of acquiring/storing/passing that information.
 
-        NB: obviously using `$scope.$parent` to access properties _within_ your plugin context is a perfectly safe and legitimate use of this strange angularJS feature.
+          NB: obviously using `$scope.$parent` to access properties _within_ your plugin context is a perfectly safe and legitimate use of this strange angularJS feature.
 
 
 6. Push up a draft version to test in a "production" environment

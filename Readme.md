@@ -46,8 +46,8 @@ If you just want a snapshot of the steps, walk through this first, and consult t
 
     Please Note:
 
-    - The migrator automatically updates your source code in a few specific ways. See List of [Migration Code Mods](#migrationcodemods) for more details.
-    - There are some [build time nuances](#buildtimenuances) that should also read about
+    - The migrator automatically updates your source code in a few specific ways. See List of [Migration Code Mods](#migration-code-mods) for more details.
+    - There are some [build time nuances](#build-process-nuances) that should also read about
 
 4. Configure your plugin's live mode to point to `https://localhost:1234` in the Zengine UI
 
@@ -173,7 +173,7 @@ The Zengine Legacy Wrapper uses Parcel (version 1.12.3) to transpile, serve, and
 
 With that in mind, here are a few nuances to be aware of during the build process
 
-- When building a plugin with Handlebars imported (see [dependency removal guide](#removingdependencies)), ignore the build error that shows up regarding the fs library. It’s a red herring and won’t affect your plugin from running successfully. _On occasion, the build will appear to hang_, **simply wait** (usually no more than 10s) and it often will kick in again and fix itself. Otherwise, just restart the server (`npm start`), and possibly delete `.cache/`. If you are not using Handlebars in your plugin, feel free to [remove it](#removingdependencies).
+- When building a plugin with Handlebars imported (true by default), ignore the build error that shows up regarding the fs library. It’s a red herring and won’t affect your plugin from running successfully. _On occasion, the build will appear to hang_, **simply wait** (usually no more than 10s) and it often will kick in again and fix itself. Otherwise, just restart the server (`npm start`), and possibly delete `.cache/`. If you are not using Handlebars in your plugin, feel free to [remove it](#removing-dependencies).
 
 ## Managing Dependencies
 

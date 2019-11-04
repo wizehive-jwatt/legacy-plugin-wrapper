@@ -4,6 +4,8 @@
 
 If you just want a snapshot of the steps, try walking through this first, and consult the expanded docs below if you get stuck.
 
+**If you're using Mayan, and you haven't created a maya.json, do that first!**
+
 1. cd into your plugin's frontend code directory (in mayan projects: `cd ./plugins/name-of-plugin`)
 2. `npm i -g ZengineHQ/zengine-migrator` to install the migrator tool globally
 3. `zmig && npm install && npm start` to migrate and spin up a local dev server for testing
@@ -31,7 +33,7 @@ If you just want a snapshot of the steps, try walking through this first, and co
         │       ├── package-lock.json
         │       └── plugin-register.js
         ├── maya_build/**/*.*
-        ├── maya.json
+        ├── maya.json   # If you don't have this, you need it!
         ├── maya.example.json
         ├── node_modules
         ├── README.md

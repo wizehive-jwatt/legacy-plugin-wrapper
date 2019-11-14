@@ -3,7 +3,7 @@
         "browser": true,
         "es6": true
     },
-    "extends": "./.eslintrc.json",
+    "extends": "./.eslintrc-legacy.json",
     "globals": {
         "Promise": "readonly",
         "plugin": "readonly",

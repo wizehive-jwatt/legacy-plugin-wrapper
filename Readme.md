@@ -20,7 +20,6 @@ If you just want a snapshot of the steps, try walking through this first, and co
 
     mayan users:
 
-        ```
         ├── backend/**/*.*
         ├── plugins
         │   └── name-of-plugin
@@ -40,7 +39,6 @@ If you just want a snapshot of the steps, try walking through this first, and co
         ├── package.json
         ├── package-lock.json
         └── .gitignore
-        ```
 
 2. Install the migration cli tool
 

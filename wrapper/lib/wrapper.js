@@ -102,6 +102,8 @@ plugin.sizer = new ContentSizer(async dimensions => {
         throw new Error('Unable to identify plugin interface')
       }
 
+      plugin.currentInterface = currentInterface
+
       plugin.compileProvider.directive('plugin', ['$rootScope', function ($rootScope) {
         return {
           restrict: 'A',
@@ -124,7 +126,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
       angular.element(document).injector().invoke(['$compile', function ($compile) {
         var scope = angular.element(pluginDiv).scope()
         scope.type = context.pluginView.type
-        scope.title = context.plugin.title
+        scope.name = context.plugin.name
         scope.navigateTo = function (path) {
           const method = 'navigate'
           const args = [`workspaces/${context.workspace.id}${path}`]
@@ -326,7 +328,58 @@ plugin.sizer = new ContentSizer(async dimensions => {
         }
       }])
       .service('$routeParams', [function () {
-        return angular.extend({}, context.location.pathParams, context.location.searchParams)
+
+        var routeParams = {}
+        var currentPluginRoute = context.location.pathParams.plugin_route
+        var routePieces = currentPluginRoute.split('/')
+
+        if (plugin.currentInterface.routes) {
+
+          angular.forEach(plugin.currentInterface.routes, function(routeDefinition) {
+
+            // strip out any * or ? - not supported for now
+            var routeDef = routeDefinition.replace(/\*|\?/g, '')
+
+            // replace any route parameters in the definition
+            // with its value from the current route
+            // e.g. /:plugin_id/users/:user_id => /4/users/5
+            if (routeDef) {
+
+              var paramsArr = routeDef.split('/')
+
+              var additionalRouteParams = {}
+
+              angular.forEach(paramsArr, function(param, index) {
+
+                if (param.indexOf(':') === 0) {
+
+                  param = param.replace(/^:/, '')
+                  var paramValue = routePieces[index]
+
+                  if (paramValue) {
+                    paramsArr[index] = paramValue
+                    additionalRouteParams[param] = paramValue
+                  }
+                }
+
+              })
+
+              // construct expected route from the route definition
+              // and compare to the current route
+              var expectedRoute = plugin.namespace + paramsArr.join('/')
+
+              if (expectedRoute === currentPluginRoute) {
+
+                // so the paramter values can be accessed when
+                // the $routeParams service is injected
+                angular.extend(routeParams, additionalRouteParams)
+
+              }
+
+            }
+          })
+        }
+        return angular.extend({}, context.location.pathParams, context.location.searchParams, routeParams)
       }])
       .service('$location', [function () {
         const znLocation = context.location

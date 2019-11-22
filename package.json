@@ -46,7 +46,7 @@
     "bignumber.js": "github:Wizehive/bignumber.js#v2.4.0",
     "firebase": "github:Wizehive/firebase-bower#v1.0.17-1",
     "handlebars": "1.3.0",
-    "ifresize": "github:tehpsalmist/ifresize",
+    "content-sizer": "github:ZengineHQ/content-sizer",
     "jquery": "1.12.4",
     "jquery-ui": "1.10.5",
     "moment": "github:Wizehive/moment#2.8.3",

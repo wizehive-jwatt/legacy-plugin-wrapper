@@ -329,8 +329,14 @@ plugin.sizer = new ZnSize(async dimensions => {
       }])
       .service('$routeParams', [function () {
 
-        var routeParams = {}
+        var routeParams = angular.extend({}, context.location.pathParams, context.location.searchParams)
+
         var currentPluginRoute = context.location.pathParams.plugin_route
+
+        if (!currentPluginRoute) {
+            return routeParams
+        }
+
         var routePieces = currentPluginRoute.split('/')
 
         if (plugin.currentInterface.routes) {
@@ -379,7 +385,7 @@ plugin.sizer = new ZnSize(async dimensions => {
             }
           })
         }
-        return angular.extend({}, context.location.pathParams, context.location.searchParams, routeParams)
+        return routeParams
       }])
       .service('$location', [function () {
         const znLocation = context.location

@@ -330,7 +330,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
       .service('$routeParams', [function () {
 
         var routeParams = {}
-        var currentPluginRoute = context.location.pathParams.plugin_route
+        var currentPluginRoute = context.location.pathParams.plugin_route || ''
         var routePieces = currentPluginRoute.split('/')
 
         if (plugin.currentInterface.routes) {

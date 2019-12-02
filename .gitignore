@@ -2,6 +2,7 @@
 .legacy-output
 .vscode
 dist
+dist.zip
 node_modules
 package-lock.json
 plugin.json

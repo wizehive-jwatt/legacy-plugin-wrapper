@@ -123,25 +123,6 @@ If you just want a snapshot of the steps, try walking through this first, and co
         ```
 
     - `znModal` or custom modals
-    
-    - Relying on hardcoded plugin namespaces will break because of the namespace migration from camelCase to kebab-case
-
-        Example:
-
-        ```js
-        plugin.controller('myController', ['$scope', function ($scope) {
-          const NAMESPACE = 'myNamespace'
-        }])
-        ```
-
-        Fix:
-
-        ```js
-        plugin.controller('myController', ['$scope', '$q', function ($scope, $q) {
-          // optionally use the plugin.namespace property instead of hard-coding! ...or just kebab-case it
-          const NAMESPACE = plugin.namespace || 'my-namespace'
-        }])
-        ```
 
     - **Patterns that don't work in Version 2 and are only fixable by non-trivial refactoring:**
 

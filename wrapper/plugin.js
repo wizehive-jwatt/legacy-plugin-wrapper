@@ -21,6 +21,7 @@ import 'ng-showdown'
 
 import 'angular-ui-sortable'
 
+/* ui-tinymce import examples (alter as needed or remove if not needed) */
 import 'tinymce/tinymce'
 import 'tinymce/plugins/autoresize'
 import 'tinymce/plugins/table'
@@ -29,6 +30,7 @@ import 'tinymce/themes/modern/theme'
 // they are copied directly by the legacy builder.
 import 'angular-ui-tinymce'
 
+/* ui-ace import examples (alter as needed or remove if not needed) */
 import 'ace-builds/src-min-noconflict/ace'
 import 'ace-builds/src-min-noconflict/theme-twilight'
 import 'ace-builds/src-min-noconflict/mode-css'

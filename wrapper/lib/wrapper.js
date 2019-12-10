@@ -93,12 +93,35 @@ plugin.sizer = new ContentSizer(async dimensions => {
 
       context = await client.call({ method: 'context' })
 
+      //
+				// if (options.templateUrl) {
+				// 	$http.get(options.templateUrl, {cache: $templateCache}).success(function (resp) {
+				// 		options.template = resp
+				// 		render()
+				// 	})
+				// } else {
+				// 	render()
+				// }
+
+      //
+
       plugin.namespace = context.plugin.namespace
 
-      const currentInterface = (settings.interfaces &&
-        settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
+      console.log(context)
 
-      if (!currentInterface || !currentInterface.template || !currentInterface.controller) {
+      let currentInterface = {}
+
+      const isModal = context.pluginView.type === 'modal'
+
+      if (isModal && context.seedData) {
+        currentInterface.template = 'modal-template'
+        currentInterface.controller = 'modalCntl'
+      } else {
+        currentInterface = (settings.interfaces &&
+          settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
+      }
+
+      if (!currentInterface || (!currentInterface.template && !currentInterface.templateUrl) || (!isModal && !currentInterface.controller)) {
         throw new Error('Unable to identify plugin interface')
       }
 
@@ -108,10 +131,83 @@ plugin.sizer = new ContentSizer(async dimensions => {
         return {
           restrict: 'A',
           scope: {},
-          link: function () {
+          link: function (scope) {
             angular.forEach(context, (value, key) => {
               $rootScope[key] = value
             })
+
+            // function action(callback) {
+            // 			callback()
+            //     }
+
+            // 		// Normalizes Button text to a camelCase name
+            // 		function btnActionName(name) {
+            // 			return name[0].toLowerCase() + name.substr(1).replace(' ', '') + 'Click'
+            // 		}
+            // 		childScope.$on('modal-close', function () {
+            // 			$modal.modal('hide')
+            // 		})
+            // 		if (options.closeButton !== false) {
+            // 			$rootScope.$on('esc', function() {
+            // 				$modal.modal('hide')
+            // 			})
+            // 		}
+            // 		var btnActions = {}
+
+            // 		var buttonMap = {},
+            // 			buttonIndex = 0
+
+            // 		childScope.setBtnAction = function (name, action) {
+            // 			var actionName = btnActionName(name)
+            // 			if (actionName in btnActions) {
+            // 				btnActions[actionName] = action
+            // 			}
+            // 		}
+            // 		childScope.modalButtons = {}
+            // 		childScope.setBtnDisabled = function(name, disabled) {
+            // 			disabled = (disabled !== undefined) ? disabled : true
+            // 			var index = buttonMap[name]
+            // 			childScope.modalButtons[index].disabled = disabled
+            // 		}
+            // 		angular.forEach(options.btns, function (btn, name) {
+            // 			var classes = ''
+            // 			if (btn.primary) { classes += ' btn-primary' }
+            // 			if (btn.danger) { classes += ' btn-danger' }
+            // 			if (btn.success) { classes += ' btn-success' }
+            // 			var actionName = btnActionName(name)
+            // 			btnActions[actionName] = action
+            // 			if (!btn.template) {
+            // 				btn.template = '<button class="btn btn-small' + classes + '" ng-disabled="modalButtons[' + buttonIndex + '].disabled">' + (btn.label || name) + '</button>'
+            // 			}
+            // 			$(btn.template).prependTo($('.modal-footer', $modal)).click(function () {
+            // 				btnActions[actionName](function (data, keepOpen) {
+            // 					if (typeof btn.action === 'function') {
+            // 						btn.action(data)
+            // 					}
+            // 					if (!keepOpen && btn.close !== false) {
+            // 						$modal.modal('hide')
+            // 					}
+            // 				})
+            // 			})
+
+            // 			childScope.modalButtons[buttonIndex] = {
+            // 				disabled: false
+            // 			}
+            // 			buttonMap[name] = buttonIndex
+            // 			buttonIndex++
+            // 		})
+
+            /*if (isModal) {
+              Object.keys(context.seedData.scope)
+                .forEach(key => {
+                  scope[key] = context.seedData.scope[key]
+                })
+
+              scope.modalTitle = context.seedData.title
+              scope.header = context.seedData.header
+
+              scope.modalBtns = context.seedData.btns
+            }*/
           },
           controller: currentInterface.controller,
           templateUrl: currentInterface.template
@@ -127,15 +223,17 @@ plugin.sizer = new ContentSizer(async dimensions => {
         var scope = angular.element(pluginDiv).scope()
         scope.type = context.pluginView.type
         scope.name = context.plugin.name
+
         scope.navigateTo = function (path) {
           const method = 'navigate'
           const args = [`workspaces/${context.workspace.id}${path}`]
           client.call({ method: 'location', args: { method, args } })
         }
+
         $compile(pluginDiv)(scope)
       }])
 
-      context.pluginView.type === 'inline' && plugin.sizer.autoSize()
+      if (context.pluginView.type === 'inline' || context.pluginView.type === 'modal') plugin.sizer.autoSize()
 
       return plugin
     }
@@ -251,6 +349,46 @@ plugin.sizer = new ContentSizer(async dimensions => {
         return function (message, type, duration) {
           return client.call({ method: 'message', args: { params: { message, type, duration } } })
         }
+      }])
+      .controller('modalCntl', ['$scope', '$rootScope', '$templateCache', function ($scope, $rootScope, $templateCache) {
+        console.log($scope)
+
+        $rootScope.$watch('seedData', seedData => {
+          if (seedData) {
+            angular.forEach(seedData, function(value, key) {
+              $scope[key] = value
+            })
+
+            if (seedData.template && !seedData.templateUrl) {
+              $templateCache.put('some-uuid-123', seedData.template);
+              $scope.templateUrl = 'some-uuid-123'
+            }
+
+            $scope.callbacks = {}
+
+            angular.forEach(seedData.btns, (btn, name) => {
+              if (btn.action) {
+                $scope.callbacks[name] = function () {
+                  client.call({
+                    method: name, args: { payload: {} }
+                  })
+                }
+              } else {
+                $scope.callbacks[name] = function () {
+
+                  if (btn.close !== false) {
+                    $scope.close()
+                  }
+                }
+              }
+            })
+          }
+        })
+
+        $scope.close = function() {
+          client.call({ method: 'close', args: { payload: {} } })
+        }
+
       }])
       .service('znPluginData', ['$q', function ($q) {
         return function (namespace) {

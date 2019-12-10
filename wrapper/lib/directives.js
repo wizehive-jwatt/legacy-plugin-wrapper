@@ -342,7 +342,7 @@ export function Directives (plugin) {
         }
       }
     }])
-    .directive('modal', ['modal', function (modal) {
+    .directive('modal', ['znModal', function (modal) {
       return {
         restrict: 'A',
         replace: false,

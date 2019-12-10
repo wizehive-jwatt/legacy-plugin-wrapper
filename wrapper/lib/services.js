@@ -902,4 +902,76 @@ export function Services (plugin) {
         }
       }
     }])
+    .service('znModal', [function () {
+      return function (options) {
+				options = angular.extend({
+					title: 'Dialog',
+					template: '',
+					templateUrl: '',
+					classes: '',
+					unique: true,
+					backdrop: true,
+					btns: {},
+					header: {},
+					closeButton: true,
+					error: false
+				}, options)
+
+				if (options.error) {
+					options.header = angular.extend(options.header,{
+						icon: 'icon-attention',
+						classes: 'message-alert'
+					})
+
+					options.classes = options.classes + ' app-error'
+        }
+
+        const events = []
+        const callbacks = {}
+
+        Object.keys(options.btns)
+          .forEach(function (name) {
+            if (typeof options.btns[name].action === 'function') {
+              callbacks[name] = options.btns[name].action
+              events.push(name)
+              options.btns[name].action = name
+
+              client.subscribe(name, () => {
+                callbacks[name]()
+                options.btns[name].close !== false && client.call({ method: 'close-modal' })
+              })
+            }
+          })
+
+				if (options.unique === true) {
+          // TODO: trigger close of any other modals
+        }
+
+				// if (typeof options.unique === 'string' && options.unique) {
+				// 	$('.modal-backdrop').remove()
+				// 	$('.' + options.unique).remove()
+        // }
+
+        client.call({
+          method: 'modal',
+          args: {
+            options: {
+              src: '/index.html',
+              events: events,
+              context: options
+            }
+          },
+          callback: payload => typeof options.afterClose === 'function' && options.afterClose()
+        })
+
+				return {
+					close: function () {
+            // TODO: trigger close of modal if it is still open
+						// if ($modal) {
+						// 	$modal.modal('hide')
+						// }
+					}
+				}
+			}
+    }])
 }

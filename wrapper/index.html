@@ -20,6 +20,21 @@
       <li><a href="javascript:void(0)">{{name}}</a></li>
     </ul>
   </nav>
+  <script type="text/ng-template" id="modal-template">
+    <div ng-class="classes">
+      <div ng-if="Object.keys(header).length" class="modal-header" ng-class="header.classes">
+        <a ng-show="closeButton !== false" class="close">&times</a>
+        <h3>{{headerIcon}}</h3>
+      </div>
+      <div class="modal-body" ng-include="templateUrl"></div>
+      <div class="modal-footer">
+        <button ng-repeat="(name, btn) in btns" class="btn btn-small" ng-class="{primary: btn.primary, success: btn.success, danger: btn.danger}" ng-disabled="btns[buttonIndex].disabled" ng-click="callbacks[name]()">
+          {{btn.label || name}}
+        </button>
+        <button ng-show="closeButton !== false" class="btn btn-small" ng-click="close()">Close</button>
+      </div>
+    </div>
+  </script>
   %PLUGIN_HTML%
 </body>
 

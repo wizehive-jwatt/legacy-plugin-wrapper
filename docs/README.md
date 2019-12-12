@@ -1,5 +1,8 @@
 # Migrating a Zengine Plugin to Version 2
 
+## Requirements
+NodeJS: version 10.10+
+
 ## Quick and Dirty
 
 If you just want a snapshot of the steps, try walking through this first, and consult the expanded docs below if you get stuck.

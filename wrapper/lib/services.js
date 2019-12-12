@@ -935,7 +935,7 @@ export function Services (plugin) {
               referenceMap.set(obj, obj)
 
               return obj
-            case 'Array':
+            case 'Array': {
               const newArr = []
 
               // store the new reference before looping to avoid infinite loop
@@ -947,7 +947,8 @@ export function Services (plugin) {
 
                 return nA
               }, newArr)
-            case 'Object':
+            }
+            case 'Object': {
               const newObj = {}
 
               // store the new reference before looping to avoid infinite loop
@@ -962,7 +963,8 @@ export function Services (plugin) {
 
                 return nO
               }, newObj)
-            case 'Map':
+            }
+            case 'Map': {
               const newMap = new Map()
 
               referenceMap.set(obj, newMap) // store the new reference before looping to avoid infinite loop
@@ -977,7 +979,8 @@ export function Services (plugin) {
               })
 
               return newMap
-            case 'Set':
+            }
+            case 'Set': {
               const newSet = new Set()
 
               referenceMap.set(obj, newSet) // store the new reference before looping to avoid infinite loop
@@ -992,6 +995,7 @@ export function Services (plugin) {
               })
 
               return newSet
+            }
             default:
               return undefined // obj is not structured-clone-friendly (like a function, for example)
           }
@@ -1059,7 +1063,7 @@ export function Services (plugin) {
               width: options.classes && options.classes.indexOf('wide-modal') !== -1 ? '80%': null
             }
           },
-          callback: payload => {
+          callback: () => {
             if (typeof options.afterClose === 'function' && isOpen) {
               options.afterClose()
 

@@ -1034,7 +1034,7 @@ export function Services (plugin) {
               options.btns[name].action = name
 
               client.subscribe(name, (payload = {}) => {
-				        callbacks[name](payload.data)
+                callbacks[name](payload.data)
 
                 if (options.btns[name].close !== false && !payload.keepOpen) {
                   client.call({ method: 'close-modal' })

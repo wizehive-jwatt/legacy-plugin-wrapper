@@ -135,79 +135,6 @@ plugin.sizer = new ContentSizer(async dimensions => {
             angular.forEach(context, (value, key) => {
               $rootScope[key] = value
             })
-
-            // function action(callback) {
-            // 			callback()
-            //     }
-
-            // 		// Normalizes Button text to a camelCase name
-            // 		function btnActionName(name) {
-            // 			return name[0].toLowerCase() + name.substr(1).replace(' ', '') + 'Click'
-            // 		}
-            // 		childScope.$on('modal-close', function () {
-            // 			$modal.modal('hide')
-            // 		})
-            // 		if (options.closeButton !== false) {
-            // 			$rootScope.$on('esc', function() {
-            // 				$modal.modal('hide')
-            // 			})
-            // 		}
-            // 		var btnActions = {}
-
-            // 		var buttonMap = {},
-            // 			buttonIndex = 0
-
-            // 		childScope.setBtnAction = function (name, action) {
-            // 			var actionName = btnActionName(name)
-            // 			if (actionName in btnActions) {
-            // 				btnActions[actionName] = action
-            // 			}
-            // 		}
-            // 		childScope.modalButtons = {}
-            // 		childScope.setBtnDisabled = function(name, disabled) {
-            // 			disabled = (disabled !== undefined) ? disabled : true
-            // 			var index = buttonMap[name]
-            // 			childScope.modalButtons[index].disabled = disabled
-            // 		}
-            // 		angular.forEach(options.btns, function (btn, name) {
-            // 			var classes = ''
-            // 			if (btn.primary) { classes += ' btn-primary' }
-            // 			if (btn.danger) { classes += ' btn-danger' }
-            // 			if (btn.success) { classes += ' btn-success' }
-            // 			var actionName = btnActionName(name)
-            // 			btnActions[actionName] = action
-            // 			if (!btn.template) {
-            // 				btn.template = '<button class="btn btn-small' + classes + '" ng-disabled="modalButtons[' + buttonIndex + '].disabled">' + (btn.label || name) + '</button>'
-            // 			}
-            // 			$(btn.template).prependTo($('.modal-footer', $modal)).click(function () {
-            // 				btnActions[actionName](function (data, keepOpen) {
-            // 					if (typeof btn.action === 'function') {
-            // 						btn.action(data)
-            // 					}
-            // 					if (!keepOpen && btn.close !== false) {
-            // 						$modal.modal('hide')
-            // 					}
-            // 				})
-            // 			})
-
-            // 			childScope.modalButtons[buttonIndex] = {
-            // 				disabled: false
-            // 			}
-            // 			buttonMap[name] = buttonIndex
-            // 			buttonIndex++
-            // 		})
-
-            /*if (isModal) {
-              Object.keys(context.seedData.scope)
-                .forEach(key => {
-                  scope[key] = context.seedData.scope[key]
-                })
-
-              scope.modalTitle = context.seedData.title
-              scope.header = context.seedData.header
-
-              scope.modalBtns = context.seedData.btns
-            }*/
           },
           controller: currentInterface.controller,
           templateUrl: currentInterface.template
@@ -221,7 +148,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
 
       angular.element(document).injector().invoke(['$compile', function ($compile) {
         var scope = angular.element(pluginDiv).scope()
-        scope.type = context.pluginView.type
+        scope.type = isModal? null: context.pluginView.type
         scope.name = context.plugin.name
 
         scope.navigateTo = function (path) {
@@ -233,7 +160,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
         $compile(pluginDiv)(scope)
       }])
 
-      if (context.pluginView.type === 'inline' || context.pluginView.type === 'modal') plugin.sizer.autoSize()
+      if (context.pluginView.type === 'inline' || isModal) plugin.sizer.autoSize()
 
       return plugin
     }
@@ -351,38 +278,71 @@ plugin.sizer = new ContentSizer(async dimensions => {
         }
       }])
       .controller('modalCntl', ['$scope', '$rootScope', '$templateCache', function ($scope, $rootScope, $templateCache) {
-        console.log($scope)
 
         $rootScope.$watch('seedData', seedData => {
           if (seedData) {
-            angular.forEach(seedData, function(value, key) {
-              $scope[key] = value
+
+            angular.forEach(seedData, (value, key) => {
+              if (key === 'scope') {
+                angular.forEach(seedData[key], (v, k) => {
+                  $scope[k] = v
+                })
+              } else {
+                $scope[key] = value
+              }
             })
 
             if (seedData.template && !seedData.templateUrl) {
-              $templateCache.put('some-uuid-123', seedData.template);
-              $scope.templateUrl = 'some-uuid-123'
+              $templateCache.put('modal-body-template', seedData.template);
+              $scope.templateUrl = 'modal-body-template'
             }
 
-            $scope.callbacks = {}
+            $scope.setBtnDisabled = (name, disabled = true) => {
+              $scope.btns[name].disabled = disabled
+            }
+          }
 
-            angular.forEach(seedData.btns, (btn, name) => {
-              if (btn.action) {
-                $scope.callbacks[name] = function () {
-                  client.call({
-                    method: name, args: { payload: {} }
-                  })
-                }
-              } else {
-                $scope.callbacks[name] = function () {
-
-                  if (btn.close !== false) {
-                    $scope.close()
-                  }
+          const sendStuff = name => (data, keepOpen) => {
+            client.call({
+              method: name,
+              args: {
+                payload: {
+                  data,
+                  keepOpen
                 }
               }
             })
           }
+
+          $scope.setBtnAction = (name, callback) => {
+            $scope.callbacks[name] = () => {
+              callback(sendStuff(name))
+            }
+          }
+
+          $scope.callbacks = {}
+
+          angular.forEach(seedData.btns, (btn, name) => {
+
+            if (btn.template) {
+              $templateCache.put(name, btn.template)
+            }
+            if (btn.action) {
+              $scope.callbacks[name] = function () {
+                client.call({
+                  method: name,
+                  args: { payload: {} }
+                })
+              }
+            } else {
+              $scope.callbacks[name] = function () {
+
+                if (btn.close !== false) {
+                  $scope.close()
+                }
+              }
+            }
+          })
         })
 
         $scope.close = function() {

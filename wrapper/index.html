@@ -31,9 +31,8 @@
         <button ng-repeat="(name, btn) in btns" class="btn btn-small" ng-if="!btn.template" ng-class="{'btn-primary': btn.primary, 'btn-success': btn.success, 'btn-danger': btn.danger}" ng-disabled="btn.disabled" ng-click="callbacks[name]()">
           {{btn.label || name}}
         </button>
-        <div ng-repeat="(name, btn) in btns" ng-if="btn.template" ng-include="name">
-          {{btn.templateUrl}}
-        </div>
+        <span ng-repeat="(name, btn) in btns" ng-if="btn.template" ng-include="name">
+        </span>
         <button ng-show="closeButton !== false" class="btn btn-small" ng-click="close()">Close</button>
       </div>
     </div>

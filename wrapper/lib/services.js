@@ -1005,26 +1005,25 @@ export function Services (plugin) {
       }
 
       return function (options) {
-				options = angular.extend({
-					title: 'Dialog',
-					template: '',
-					templateUrl: '',
-					classes: '',
-					unique: true,
-					backdrop: true,
-					btns: {},
-					header: {},
-					closeButton: true,
-					error: false
-				}, options)
+        options = angular.extend({
+          title: 'Dialog',
+          template: '',
+          templateUrl: '',
+          classes: '',
+          unique: true,
+          btns: {},
+          header: null,
+          closeButton: true,
+          error: false
+        }, options)
 
-				if (options.error) {
-					options.header = angular.extend(options.header,{
-						icon: 'icon-attention',
-						classes: 'message-alert'
-					})
+        if (options.error) {
+          options.header = angular.extend(options.header || {},{
+            icon: 'icon-attention',
+            classes: 'message-alert'
+          })
 
-					options.classes = options.classes + ' app-error'
+          options.classes = options.classes + ' app-error'
         }
 
         const events = []
@@ -1047,11 +1046,18 @@ export function Services (plugin) {
             }
           })
 
-				if (options.unique === true) {
-          // TODO: trigger close of any other modals
-        }
-
         let isOpen = true
+        let width = null
+
+        if (options.classes) {
+
+          if (options.classes.indexOf('wide-modal')) {
+            width = '80%'
+          } else if (options.classes.indexOf('modal-filter-panel')) {
+            width = '830px'
+          }
+
+        }
 
         client.call({
           method: 'modal',
@@ -1060,7 +1066,7 @@ export function Services (plugin) {
               src: '/index.html',
               events: events,
               context: sanitizeForPostMessage(options),
-              width: options.classes && options.classes.indexOf('wide-modal') !== -1 ? '80%': null
+              width: width
             }
           },
           callback: () => {

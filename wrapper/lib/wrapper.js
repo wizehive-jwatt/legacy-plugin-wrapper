@@ -95,10 +95,19 @@ plugin.sizer = new ContentSizer(async dimensions => {
 
       plugin.namespace = context.plugin.namespace
 
-      const currentInterface = (settings.interfaces &&
-        settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
+      let currentInterface = {}
 
-      if (!currentInterface || !currentInterface.template || !currentInterface.controller) {
+      const isModal = context.pluginView.type === 'modal'
+
+      if (isModal && context.seedData) {
+        currentInterface.template = 'modal-template'
+        currentInterface.controller = 'modalCntl'
+      } else {
+        currentInterface = (settings.interfaces &&
+          settings.interfaces.find(iface => context.pluginView && iface && iface.type === context.pluginView.type)) || settings
+      }
+
+      if (!currentInterface || (!currentInterface.template && !currentInterface.templateUrl) || (!isModal && !currentInterface.controller)) {
         throw new Error('Unable to identify plugin interface')
       }
 
@@ -125,17 +134,19 @@ plugin.sizer = new ContentSizer(async dimensions => {
 
       angular.element(document).injector().invoke(['$compile', function ($compile) {
         var scope = angular.element(pluginDiv).scope()
-        scope.type = context.pluginView.type
+        scope.type = isModal? null: context.pluginView.type
         scope.name = context.plugin.name
+
         scope.navigateTo = function (path) {
           const method = 'navigate'
           const args = [`workspaces/${context.workspace.id}${path}`]
           client.call({ method: 'location', args: { method, args } })
         }
+
         $compile(pluginDiv)(scope)
       }])
 
-      context.pluginView.type === 'inline' && plugin.sizer.autoSize()
+      if (context.pluginView.type === 'inline' || isModal) plugin.sizer.autoSize()
 
       return plugin
     }
@@ -158,8 +169,6 @@ plugin.sizer = new ContentSizer(async dimensions => {
       }])
       .run(['$templateCache', function ($templateCache) {
         'use strict'
-        $templateCache.put('/templates/partials/action-panel.html',
-          '<div ng-show="panelData.panels.length"><div class="action-panel" full-height-panel><div class="action-panel-fixed-wrapper" full-height-panel ng-repeat="panel in panelData.panels" ng-if="$index === (panelData.panels.length - 1)" action-panel-inner panel-index="{{panel.index}}"></div></div><div ng-repeat="panel in panelData.tabs" class="action-panel-tab" full-height-panel ng-click="popToIndex(panel.index)"><div class="action-panel-tab-inner"><p class="action-panel-tab-icon"><i class="icon-th-large"></i></p><div class="action-panel-tab-title"><span>{{panel.title}}</span> <span ng-show="panel.subtitle">({{panel.subtitle}})</span></div></div></div></div>')
         $templateCache.put('/templates/partials/filters-panel/country-select.html',
           '<select class="dropdown-select-btn" ng-model="condition.value" ng-disabled="existOptionSelected()" ng-options="country.id as country.country for country in countries"></select>')
         $templateCache.put('/templates/partials/filters-panel/date.html',
@@ -167,37 +176,39 @@ plugin.sizer = new ContentSizer(async dimensions => {
         $templateCache.put('/templates/partials/filters-panel/default.html',
           '<input class="btn-input" ng-model="condition.value" type="text" ng-hide="existOptionSelected() || validationOptionSelected()"> <input class="btn-input" type="text" disabled="disabled" ng-if="existOptionSelected()"><select class="dropdown-select-btn" ng-model="condition.value" ng-if="validationOptionSelected()"><option value="{{validationKey}}" ng-selected="condition.value == validationKey" ng-repeat="(validationKey, validationLabel) in validationValues">{{validationLabel}}</option></select>')
         $templateCache.put('/templates/partials/filters-panel/draft.html',
-          "<select class=\"dropdown-select-btn\" ng-model=\"condition.value\"><option value=\"true\" ng-selected=\"condition.value !== 'false' && condition.value\">False (Show only completed)</option><option value=\"false\" ng-selected=\"!condition.value || condition.value === 'false'\">True (Show only drafts)</option></select>")
+          '<select class="dropdown-select-btn" ng-model="condition.value"><option value="true" ng-selected="condition.value !== \'false\' && condition.value">False (Show only completed)</option><option value="false" ng-selected="!condition.value || condition.value === \'false\'">True (Show only drafts)</option></select>')
         $templateCache.put('/templates/partials/filters-panel/folder.html',
-          "<select class=\"dropdown-select-btn\" ng-model=\"condition.value\"><option value=\"{{folder.id}}\" ng-selected=\"condition.value != '' && condition.value == folder.id\" ng-repeat=\"folder in form.folders\">{{folder.name}}</option></select>")
+          '<select class="dropdown-select-btn" ng-model="condition.value"><option value="{{folder.id}}" ng-selected="condition.value != \'\' && condition.value == folder.id" ng-repeat="folder in form.folders">{{folder.name}}</option></select>')
         $templateCache.put('/templates/partials/filters-panel/linked.html',
-          "<span ng-hide=\"existOptionSelected() || validationOptionSelected()\" record-select ng-model=\"selected.value\" form-id=\"attributeOptions[condition.attribute].settings.properties.linkedForm\"></span> <input class=\"btn-input\" type=\"text\" disabled=\"disabled\" ng-if=\"existOptionSelected()\"><select class=\"dropdown-select-btn\" ng-model=\"condition.value\" ng-if=\"validationOptionSelected()\" ng-init=\"condition.value = 'unique'\"><option value=\"unique\" ng-selected=\"condition.value == validationKey\">No Duplicates</option></select>")
+          '<span ng-hide="existOptionSelected() || validationOptionSelected()" record-select ng-model="selected.value" form-id="attributeOptions[condition.attribute].settings.properties.linkedForm"></span> <input class="btn-input" type="text" disabled="disabled" ng-if="existOptionSelected()"><select class="dropdown-select-btn" ng-model="condition.value" ng-if="validationOptionSelected()" ng-init="condition.value = \'unique\'"><option value="unique" ng-selected="condition.value == validationKey">No Duplicates</option></select>')
         $templateCache.put('/templates/partials/filters-panel/member.html',
-          "<select class=\"dropdown-select-btn\" ng-model=\"condition.value\" ng-disabled=\"condition.value === 'null'\"><option value=\"{{user.id}}\" ng-selected=\"condition.value == user.id\" ng-repeat=\"user in users\">{{user.displayName}}</option></select>")
+          '<zn-member-select members="users" ng-model="condition.value" member-property="id"></zn-member-select>')
         $templateCache.put('/templates/partials/filters-panel/multiple.html',
-          "<select class=\"dropdown-select-btn\" ng-model=\"condition.value\" ng-disabled=\"condition.value === 'null'\"><option value=\"{{value}}\" ng-selected=\"condition.value == value\" ng-repeat=\"(value, label) in attributeOptions[condition.attribute].settings.properties.choices\">{{label}}</option></select>")
+          '<div ng-if="condition.prefix !== \'in\' && condition.prefix !== \'not-in\'"><select class="dropdown-select-btn" ng-model="condition.value" ng-disabled="condition.value === \'null\'"><option value="{{value}}" ng-selected="condition.value == value" ng-repeat="(value, label) in attributeOptions[condition.attribute].settings.properties.choices">{{label}}</option></select></div><div ng-if="condition.prefix === \'in\' || condition.prefix === \'not-in\'"><div zn-filter-value-in ng-model="condition.value" options="attributeOptions[condition.attribute].settings.properties.choices"></div></div>')
         $templateCache.put('/templates/partials/filters-panel/number.html',
           '<input class="btn-input" ng-model="condition.value" type="text" numbers-only>')
         $templateCache.put('/templates/partials/filters-panel/numeric.html',
           '<input class="btn-input" ng-model="condition.value" type="text" numbers-only ng-hide="existOptionSelected()"> <input class="btn-input" type="text" disabled="disabled" ng-if="existOptionSelected()">')
         $templateCache.put('/templates/partials/filters-panel/single.html',
-          "<input class=\"btn-input\" ng-if=\"condition.prefix !== '' && condition.prefix !== 'not' && !existOptionSelected()\" ng-model=\"condition.value\" type=\"text\"> <input class=\"btn-input\" ng-if=\"condition.prefix !== '' && condition.prefix !== 'not' && existOptionSelected()\" ng-disabled=\"true\"><div ng-if=\"condition.prefix === '' || condition.prefix === 'not'\"><select class=\"dropdown-select-btn\" ng-model=\"condition.value\" ng-disabled=\"condition.value === 'null'\"><option value=\"{{value}}\" ng-selected=\"condition.value == value\" ng-repeat=\"(value, label) in attributeOptions[condition.attribute].settings.properties.choices\">{{label}}</option></select></div>")
+          '<input class="btn-input" ng-if="condition.prefix !== \'\' && condition.prefix !== \'not\' && condition.prefix !== \'in\' && condition.prefix !== \'not-in\' && !existOptionSelected()" ng-model="condition.value" type="text"> <input class="btn-input" ng-if="condition.prefix !== \'\' && condition.prefix !== \'not\' && condition.prefix !== \'in\' && condition.prefix !== \'not-in\' && existOptionSelected()" ng-disabled="true"><div ng-if="condition.prefix === \'\' || condition.prefix === \'not\'"><select class="dropdown-select-btn" ng-model="condition.value" ng-disabled="condition.value === \'null\'"><option value="{{value}}" ng-selected="condition.value == value" ng-repeat="(value, label) in attributeOptions[condition.attribute].settings.properties.choices">{{label}}</option></select></div><div ng-if="condition.prefix === \'in\' || condition.prefix === \'not-in\'"><div zn-filter-value-in ng-model="condition.value" options="attributeOptions[condition.attribute].settings.properties.choices"></div></div>')
         $templateCache.put('/templates/partials/filters-panel/state-select.html',
-          "<select class=\"dropdown-select-btn\" ng-model=\"condition.value\" ng-disabled=\"condition.value === 'null'\" ng-options=\"state.id as state.state for state in states\"></select>")
+          '<select class="dropdown-select-btn" ng-model="condition.value" ng-disabled="condition.value === \'null\'" ng-options="state.id as state.state for state in states"></select>')
         $templateCache.put('/templates/partials/filters-panel/summary.html',
           '<input class="btn-input" ng-model="condition.value" type="text" numbers-only ng-hide="existOptionSelected()"> <input class="btn-input" type="text" disabled="disabled" ng-if="existOptionSelected()">')
         $templateCache.put('/templates/partials/filters-panel/year.html',
           '<input class="btn-input full-width" min="1" max="9999" ng-model="condition.value" limit-to="4" type="number" ng-hide="existOptionSelected()"> <input class="btn-input" type="number" disabled="disabled" ng-if="existOptionSelected()">')
         $templateCache.put('/templates/partials/form-select/form-select.html',
-          '<ui-select ng-model="form.selected" theme="bootstrap" ng-disabled="disabled"><ui-select-match placeholder="Select or search a form in the list...">{{$select.selected.name}}</ui-select-match><ui-select-choices repeat="form in forms | filter: { name: $select.search }"><span ng-bind-html="form.name.toString() | escapeHtml | highlight: $select.search"></span></ui-select-choices></ui-select>')
+          '<ui-select ng-model="form.selected" theme="bootstrap" ng-disabled="disabled"><ui-select-match placeholder="Select or search a form in the list...">{{$select.selected.name}}</ui-select-match><ui-select-choices repeat="form in forms | filter: { name: $select.search }"><span ng-bind-html="form.name.toString() | escapeHtmlTags | highlight: $select.search | uiSelectHighlightFixChars"></span></ui-select-choices></ui-select>')
+        $templateCache.put('/templates/partials/inline-filter-attribute-condition-in.html',
+          '<ng-dropdown-multiselect selected-model="value" options="multiSelectOptions" translation-texts="translations" extra-settings="extra"></ng-dropdown-multiselect>')
         $templateCache.put('/templates/partials/inline-filter-attribute-condition.html',
-          "<div><div class=\"filter-condition-col\"><div class=\"btn full-width no-padding\"><select class=\"dropdown-select-btn\" ng-hide=\"condition.attribute\" ng-model=\"selected.attribute\" ng-options=\"att.attribute as att.name for att in sortedAttributes\"><option value=\"\">Choose one...</option></select><select class=\"dropdown-select-btn\" ng-if=\"condition.attribute\" ng-model=\"condition.attribute\"><option value=\"{{att.attribute}}\" ng-selected=\"condition.attribute == att.attribute\" ng-repeat=\"att in sortedAttributes\" ng-hide=\"att.disabled && condition.attribute.indexOf('form') === -1\">{{att.name}}</option></select></div></div><div class=\"filter-condition-col in-line\" ng-if=\"isLinkedAttribute() && notHasOneRelation()\"><div class=\"btn-group\"><a href=\"javascript:void(0);\" class=\"btn btn-mini\" ng-class=\"{selected: isCustomFilter() === false}\" ng-click=\"setConditionType('specific-record')\">Specific Record</a> <a href=\"javascript:void(0);\" class=\"btn btn-mini\" ng-class=\"{selected: isCustomFilter() === true, disabled: isCustomFilter() === false && !subFilterConditionAllowed() }\" ng-click=\"setConditionType('custom-filter')\">Custom Filter</a></div><div style=\"font-size: 0.7em\"><a href=\"{{services.uservoice}}/knowledgebase/articles/381484\" target=\"_blank\"><i class=\"icon-help-circled\"></i> Learn more about linked forms</a></div></div><div class=\"filter-condition-col\"><div ng-if=\"allowedPrefixes.length == 1\" class=\"full-width btn-input\">{{allowedPrefixes[0].label}}</div><div ng-if=\"allowedPrefixes.length > 1\" class=\"btn full-width no-padding\"><select class=\"dropdown-select-btn\" ng-model=\"selected.prefix\" ng-options=\"pre.prefix as pre.label group by pre.type for pre in allowedPrefixes\"></select></div></div><div ng-if=\"!isLinkedAttribute() || !isCustomFilter()\" class=\"filter-condition-col\"><div zn-filter-value=\"fieldTypes[attributeOptions[condition.attribute].type].template\"></div></div><div ng-if=\"conditions.length\" class=\"filter-remove-col\"><a href=\"javascript:void(0);\" ng-click=\"removeAttributeCondition();\"><i class=\"icon-cancel-circled\"></i></a></div></div><div ng-show=\"condition.attribute && !attributeOptions[condition.attribute]\" class=\"help-block error\">This filter condition is no longer valid because the field was deleted. Change or delete this filter condition to make the filter valid.</div><div ng-show=\"!isCustomFilter() && isLinkedAttribute() && notHasOneRelation() && !subFilterBelowMaxCount()\" class=\"help-block error\">There is a limit of 2 custom sub filters for linked forms.</div><div ng-show=\"!isCustomFilter() && isLinkedAttribute() && notHasOneRelation() && subFilterExistsForAttribute()\" class=\"help-block error\">This field already has a sub filter.</div><div ng-if=\"isLinkedAttribute() && isCustomFilter()\"><p>Custom Filter for your linked form \"{{linkedFormName}}\" for select records matching...</p><div zn-inline-filter=\"customFilterinlineOptions\" ng-model=\"condition.filter\" zn-inline-filter-private-operator-options=\"operatorOptions\" zn-inline-filter-private-level=\"nextLevel\" zn-inline-filter-private-counts=\"counts\" zn-inline-filter-private-remove-parent-condition=\"removeParentCondition()\"></div></div>")
+          '<div><div class="filter-condition-col"><div class="btn full-width no-padding"><select class="dropdown-select-btn" ng-hide="condition.attribute" ng-model="selected.attribute" ng-options="att.attribute as att.name for att in sortedAttributes"><option value="">Choose one...</option></select><select class="dropdown-select-btn" ng-if="condition.attribute" ng-model="condition.attribute"><option value="{{att.attribute}}" ng-selected="condition.attribute == att.attribute" ng-repeat="att in sortedAttributes" ng-hide="att.disabled && condition.attribute.indexOf(\'form\') === -1">{{att.name}}</option></select></div></div><div class="filter-condition-col in-line" ng-if="isLinkedAttribute() && notHasOneRelation() && isValidForFiltering()"><div class="btn-group"><a href="javascript:void(0);" class="btn btn-mini" ng-class="{selected: isCustomFilter() === false}" ng-click="setConditionType(\'specific-record\')">Specific Record</a> <a href="javascript:void(0);" class="btn btn-mini" ng-class="{selected: isCustomFilter() === true, disabled: isCustomFilter() === false && !subFilterConditionAllowed() }" ng-click="setConditionType(\'custom-filter\')">Custom Filter</a></div><div style="font-size: 0.7em"><a href="{{constants.SUPPORT_URL}}/knowledgebase/articles/381484" target="_blank"><i class="icon-help-circled"></i> Learn more about linked forms</a></div></div><div class="filter-condition-col"><div ng-if="allowedPrefixes.length == 1" class="full-width btn-input">{{allowedPrefixes[0].label}}</div><div ng-if="allowedPrefixes.length > 1 && isValidForFiltering()" class="btn full-width no-padding"><select class="dropdown-select-btn" ng-model="selected.prefix" ng-options="pre.prefix as pre.label group by pre.type for pre in allowedPrefixes"></select></div></div><div ng-if="(!isLinkedAttribute() || !isCustomFilter()) && isValidForFiltering()" class="filter-condition-col"><div zn-filter-value="fieldTypes[attributeOptions[condition.attribute].type].template"></div></div><div ng-if="conditions.length && isValidForFiltering()" class="filter-remove-col"><a href="javascript:void(0);" ng-click="removeAttributeCondition();"><i class="icon-cancel-circled"></i></a></div></div><div ng-show="condition.attribute && !attributeOptions[condition.attribute]" class="help-block error">This filter condition is no longer valid because the field was deleted. Change or delete this filter condition to make the filter valid.</div><div ng-show="!isCustomFilter() && isLinkedAttribute() && notHasOneRelation() && !subFilterBelowMaxCount()" class="help-block error">There is a limit of 2 custom sub filters for linked forms.</div><div ng-show="!isCustomFilter() && isLinkedAttribute() && notHasOneRelation() && subFilterExistsForAttribute()" class="help-block error">This field already has a sub filter.</div><div ng-show="isLinkedAttribute() && !isValidForFiltering()" class="help-block error">You do not have permission to set up a filter on this form. Please select a different option.</div><div ng-if="isLinkedAttribute() && isCustomFilter()"><p>Custom Filter for your linked form "{{linkedFormName}}" for select records matching...</p><div zn-inline-filter="customFilterinlineOptions" ng-model="condition.filter" zn-inline-filter-private-operator-options="operatorOptions" zn-inline-filter-private-level="nextLevel" zn-inline-filter-private-counts="counts" zn-inline-filter-private-remove-parent-condition="removeParentCondition()"></div></div>')
         $templateCache.put('/templates/partials/inline-filter.html',
-          "<div ng-class=\"{'inline-filter': level == 1}\"><div class=\"row\"><div class=\"operator-col\"><div class=\"btn no-padding full-width\"><select class=\"dropdown-select-btn\" ng-model=\"operator\" ng-options=\"op.operator as op.selectorLabel for op in operatorOptions\"></select></div></div><span class=\"operator-col-help-text\" ng-if=\"level == 1\">of the criteria below <a href=\"{{services.uservoice}}/knowledgebase/articles/381483\" target=\"_blank\"><i class=\"icon-help-circled\"></i></a></span></div><div ng-repeat=\"condition in conditions track by trackCondition(condition)\"><div class=\"operator-col\"><span ng-hide=\"$first\" class=\"btn-input centered full-width in-line\">{{operatorConditionLabel}}</span><div ng-if=\"$first\" class=\"operator-placeholder\"></div></div><div class=\"conditions-col\"><div ng-show=\"$first\" class=\"text-small\"><div class=\"filter-condition-col no-padding\">Field:</div><div class=\"filter-condition-col no-padding\">Condition:</div><div class=\"filter-condition-col no-padding\">Value:</div></div><div class=\"inline\" ng-if=\"condition.attribute != null && attributesLoaded\"><div zn-filter-attribute-condition condition=\"condition\" conditions=\"conditions\" prefix-options=\"prefixOptions\" attribute-options=\"attributeOptions\" sorted-attributes=\"sortedAttributes\" operator-options=\"operatorOptions\" options=\"options\" form=\"form\" forms=\"forms\" users=\"users\" next-level=\"nextLevel\" subfilters=\"options.subfilters\" counts=\"counts\" remove-parent-condition=\"removeCondition($index)\"></div></div><div ng-if=\"condition.attribute == null\"><div zn-inline-filter=\"subOptions\" ng-model=\"condition\" zn-inline-filter-private-operator-options=\"operatorOptions\" zn-inline-filter-private-level=\"nextLevel\" zn-inline-filter-private-counts=\"counts\" zn-inline-filter-private-remove-parent-condition=\"removeCondition($index)\"></div></div></div></div><div class=\"operator-col\"><span class=\"btn-input centered full-width in-line\">{{operatorConditionLabel}}</span></div><div class=\"conditions-col add-filter-col\"><select ng-disabled=\"!showAddCondition()\" class=\"add-filter-select-btn btn-small btn btn-primary\" ng-model=\"addFilterSelector\"><option value=\"\" disabled=\"disabled\">+ Add a Filter</option><optgroup label=\"Group\" ng-show=\"showAddSubGroup()\"><option ng-repeat=\"op in operatorOptions\" value=\"{{op.operator}}\">{{op.selectorLabel}}</option></optgroup><optgroup label=\"Field\"><option ng-repeat=\"attribute in sortedAttributes\" value=\"{{attribute.attribute}}\" ng-if=\"!attribute.disabled\">{{attribute.name}}</option></optgroup></select><span ng-show=\"level == 1 && !showAddCondition()\" class=\"help-inline danger\">You have reached the filter criteria limit of 10. To add more, delete existing criteria.</span></div></div>")
+          '<div ng-class="{\'inline-filter\': level == 1}"><div class="row"><div class="operator-col"><div class="btn no-padding full-width"><select class="dropdown-select-btn" ng-model="operator" ng-options="op.operator as op.selectorLabel for op in operatorOptions"></select></div></div><span class="operator-col-help-text" ng-if="level == 1">of the criteria below <a href="{{constants.SUPPORT_URL}}/article/463-filtering-data" target="_blank"><i class="icon-help-circled"></i></a></span></div><div ng-repeat="condition in conditions track by trackCondition(condition)"><div class="operator-col"><span ng-hide="$first" class="btn-input centered full-width in-line">{{operatorConditionLabel}}</span><div ng-if="$first" class="operator-placeholder"></div></div><div class="conditions-col"><div ng-show="$first" class="text-small"><div class="filter-condition-col no-padding">Field:</div><div class="filter-condition-col no-padding">Condition:</div><div class="filter-condition-col no-padding">Value:</div></div><div class="inline" ng-if="condition.attribute != null && attributesLoaded"><div zn-filter-attribute-condition condition="condition" conditions="conditions" prefix-options="prefixOptions" attribute-options="attributeOptions" sorted-attributes="sortedAttributes" operator-options="operatorOptions" options="options" form="form" forms="forms" users="users" next-level="nextLevel" subfilters="options.subfilters" counts="counts" remove-parent-condition="removeCondition($index)"></div></div><div ng-if="condition.attribute == null"><div zn-inline-filter="subOptions" ng-model="condition" zn-inline-filter-private-operator-options="operatorOptions" zn-inline-filter-private-level="nextLevel" zn-inline-filter-private-counts="counts" zn-inline-filter-private-remove-parent-condition="removeCondition($index)"></div></div></div></div><div class="operator-col"><span class="btn-input centered full-width in-line">{{operatorConditionLabel}}</span></div><div class="conditions-col add-filter-col"><select ng-disabled="!showAddCondition()" class="add-filter-select-btn btn-small btn btn-primary" ng-model="addFilterSelector"><option value="" disabled="disabled">+ Add a Filter</option><optgroup label="Group" ng-show="showAddSubGroup()"><option ng-repeat="op in operatorOptions" value="{{op.operator}}">{{op.selectorLabel}}</option></optgroup><optgroup label="Field"><option ng-repeat="attribute in sortedAttributes" value="{{attribute.attribute}}" ng-if="!attribute.disabled">{{attribute.name}}</option></optgroup></select><span ng-show="level == 1 && !showAddCondition()" class="help-inline danger">You have reached the filter criteria limit of 10. To add more, delete existing criteria.</span></div></div>')
         $templateCache.put('/templates/partials/record-list.html',
           '<div class="record-list"><div ng-hide="workspace">Please choose a Workspace.</div><div ng-show="workspace && workspace.forms.length > 1"><ul class="tabs"><li ng-repeat="form in workspace.forms"><a ng-click="selectForm(form)">{{form.name}}</a></li></ul></div><div ng-hide="records">There are no records to show.</div><div ng-show="records" class="record-list-records"><ul><li ng-repeat="record in records"><a href="" ng-click="selectRecord(record)"><i class="icon-doc"></i><span class="record-list-records-text">{{record.name}}</span></a></li></ul></div></div>')
         $templateCache.put('/templates/partials/top-nav.html',
-          "<div class=\"navbar navbar-fixed-top\"><div class=\"container-fluid\"><div class=\"navbar-header navbar-right\"><ul class=\"nav navbar-nav navbar-top-links pull-left\"><li><a class=\"navbar-toggle\" ng-init=\"navCollapsed = true\" ng-click=\"navCollapsed = !navCollapsed\"><i class=\"icon icon-menu\"></i></a></li></ul><ul class=\"nav navbar-nav navbar-top-links pull-right\"><li ng-show=\"workspace.id\" class=\"navbar-marketplace\"><a href=\"javascript:void(0);\" ng-click=\"navOpenMarketplace();\"><i class=\"icon icon-puzzle\"></i><span class=\"tablet-hidden\">&nbsp;Marketplace</span></a></li><li class=\"dropdown\"><a href class=\"dropdown-toggle navbar-memberitem\" tooltip=\"{{user.displayText}}\"><span class=\"avatar avatar-sm\"><img ng-src=\"{{user.settings.avatarUrl}}\" ng-show=\"user.settings.avatarUrl\"> <i class=\"icon-member\" ng-hide=\"user.settings.avatarUrl\"></i></span> <i class=\"icon-down-dir\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li><a href=\"/account\" app-path>My Account</a></li><li><a href=\"#\" ng-click=\"logout()\">Sign out</a></li></ul></li><li class=\"zn-top-nav\"><div plugin=\"zn-top-nav\" class=\"plugin\"></div></li><li ng-show=\"workspace.isAdmin\" class=\"tablet-hidden\"><a href=\"{{workspacePath}}/admin\" app-path tooltip=\"Settings &amp; Tools\"><i class=\"icon icon-cog\"></i></a></li><li ng-show=\"workspace.isAdmin\" class=\"tablet-visible\"><a href=\"/templates/partials/feature-not-available.html\" class=\"topnav-section-link\" modal title=\"Sorry!\" tooltip=\"Settings &amp; Tools\"><i class=\"icon icon-cog\"></i></a></li><li class=\"dropdown\"><a href class=\"dropdown-toggle\" tooltip=\"Help\"><i class=\"icon icon-help-circled\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li><a href=\"javascript:void(0);\" onclick=\"return SnapEngage.startLink()\"><i class=\"icon-comment-empty\"></i> Chat &amp; Support</a></li><li><a href=\"{{services.uservoice}}\" target=\"_blank\"><i class=\"icon-info-circled\"></i> Help Center</a></li></ul></li><li class=\"logo\"><a href=\"/\" app-path><img class=\"zengine-icon\" src=\"/images/zengine-icon-white-sm.png\"> <span class=\"tablet-hidden\" ng-bind-html=\"branding.logo\"></span></a></li><li class=\"top-nav-right-plugin-item\"><div plugin=\"top-nav-right-corner\" class=\"plugin\"></div></li></ul></div><div class=\"navbar-collapse\" collapse=\"navCollapsed\" id=\"navbar-collapse\"><ul class=\"nav navbar-nav\"><li class=\"dropdown navbar-workspacemenu\"><a href class=\"dropdown-toggle\"><span class=\"navbar-home-onworkspace\">{{workspaceName}}</span> <i class=\"icon-down-dir\"></i></a><ul class=\"dropdown-menu navbar-workspacemenu-dropdown\"><li class=\"dropdown-headeritem navbar-home-onworkspace\"><a href=\"/\"><i class=\"icon icon-home\"></i> Home</a></li><li ng-class=\"workspace.activeClass\" ng-repeat=\"workspace in workspaces | orderBy:'name'\"><a href=\"/workspaces/{{workspace.id}}/data\" app-path>{{workspace.name}}</a></li></ul></li></ul><ul class=\"nav navbar-nav nav-icons zn-var-width-list\" zn-var-width-list=\"navBarItems\" zn-var-width-edge-selector=\"div.navbar-header.navbar-right\"><li></li><li class=\"{{item.classes()}}\" ng-if=\"item.show()\" ng-mouseenter=\"item.mouseenter()\" ng-mouseleave=\"item.mouseleave()\" ng-repeat=\"item in visibleItems\" zn-var-width-main-item><a href=\"{{item.path()}}\" app-path tooltip=\"{{item.tooltip}}\"><i class=\"icon {{item.icon}}\"></i> <span class=\"navbar-itemtext\">{{item.title}}</span></a><div class=\"tooltip-menu tooltip-menu-large{{item.showMenu}}\"><div class=\"pointer pointer-left\"><div class=\"arrow\"></div><div class=\"arrow_border\"></div></div><div class=\"tooltip-menu-body\"><ul ng-show=\"forms.length\"><li ng-repeat=\"menuItem in item.menu\"><a href=\"{{item.path}}/{{menuItem.id}}\" app-path>{{menuItem.name}}</a></li></ul></div></div></li><li class=\"dropdown zn-var-width-more-button topnav-nav-item\" zn-var-width-more-button ng-show=\"extraItems.length > 0\"><a class=\"dropdown-toggle\" tooltip=\"More\"><i class=\"icon-ellipsis\"></i></a><ul class=\"dropdown-menu nav-icons-extra\" zn-var-width-extra-list><li class=\"{{item.classes()}}\" ng-if=\"item.show()\" ng-mouseenter=\"item.mouseenter()\" ng-mouseleave=\"item.mouseleave()\" ng-repeat=\"item in extraItems\"><a tooltip=\"{{item.title}}\" href=\"{{item.path()}}\" app-path><i class=\"icon {{item.icon}}\"></i> <span class=\"navbar-itemtext\">{{item.title}}</span></a></li></ul></li></ul></div></div></div>")
+          '<div class="navbar navbar-fixed-top"><div class="container-fluid"><div class="navbar-header navbar-right"><ul class="nav navbar-nav navbar-top-links pull-left"><li><a class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed"><i class="icon icon-menu"></i></a></li></ul><ul class="nav navbar-nav navbar-top-links pull-right"><li ng-show="workspace.id" class="navbar-marketplace"><a href="javascript:void(0);" ng-click="navOpenMarketplace();"><i class="icon icon-puzzle"></i><span class="tablet-hidden">&nbsp;Marketplace</span></a></li><li class="dropdown"><a href class="dropdown-toggle navbar-memberitem" tooltip="{{user.displayText}}"><span class="avatar avatar-sm"><img ng-src="{{user.settings.avatarUrl}}" ng-show="user.settings.avatarUrl"> <i class="icon-member" ng-hide="user.settings.avatarUrl"></i></span> <i class="icon-down-dir"></i></a><ul class="dropdown-menu dropdown-menu-right"><li><a href="/account" app-path>My Account</a></li><li><a href="#" ng-click="logout()">Sign out</a></li></ul></li><li class="zn-top-nav"><div plugin="zn-top-nav" class="plugin"></div></li><li ng-show="workspace.isAdmin" class="tablet-hidden"><a href="{{workspacePath}}/admin" app-path tooltip="Settings &amp; Tools"><i class="icon icon-cog"></i></a></li><li ng-show="workspace.isAdmin" class="tablet-visible"><a href="/templates/partials/feature-not-available.html" class="topnav-section-link" modal title="Sorry!" tooltip="Settings &amp; Tools"><i class="icon icon-cog"></i></a></li><li class="dropdown"><a href class="dropdown-toggle" tooltip="Help"><i class="icon icon-help-circled"></i></a><ul class="dropdown-menu dropdown-menu-right"><li><a href="javascript:void(0);" onclick="return SnapEngage.startLink()"><i class="icon-comment-empty"></i> Chat &amp; Support</a></li><li><a href="{{services.uservoice}}" target="_blank"><i class="icon-info-circled"></i> Help Center</a></li></ul></li><li class="logo"><a href="/" app-path><img class="zengine-icon" src="/images/zengine-icon-white-sm.png"> <span class="tablet-hidden" ng-bind-html="branding.logo"></span></a></li><li class="top-nav-right-plugin-item"><div plugin="top-nav-right-corner" class="plugin"></div></li></ul></div><div class="navbar-collapse" collapse="navCollapsed" id="navbar-collapse"><ul class="nav navbar-nav"><li class="dropdown navbar-workspacemenu"><a href class="dropdown-toggle"><span class="navbar-home-onworkspace">{{workspaceName}}</span> <i class="icon-down-dir"></i></a><ul class="dropdown-menu navbar-workspacemenu-dropdown"><li class="dropdown-headeritem navbar-home-onworkspace"><a href="/"><i class="icon icon-home"></i> Home</a></li><li ng-class="workspace.activeClass" ng-repeat="workspace in workspaces | orderBy:\'name\'"><a href="/workspaces/{{workspace.id}}/data" app-path>{{workspace.name}}</a></li></ul></li></ul><ul class="nav navbar-nav nav-icons zn-var-width-list" zn-var-width-list="navBarItems" zn-var-width-edge-selector="div.navbar-header.navbar-right"><li></li><li class="{{item.classes()}}" ng-if="item.show()" ng-mouseenter="item.mouseenter()" ng-mouseleave="item.mouseleave()" ng-repeat="item in visibleItems" zn-var-width-main-item><a href="{{item.path()}}" app-path tooltip="{{item.tooltip}}"><i class="icon {{item.icon}}"></i> <span class="navbar-itemtext">{{item.title}}</span></a><div class="tooltip-menu tooltip-menu-large{{item.showMenu}}"><div class="pointer pointer-left"><div class="arrow"></div><div class="arrow_border"></div></div><div class="tooltip-menu-body"><ul ng-show="forms.length"><li ng-repeat="menuItem in item.menu"><a href="{{item.path}}/{{menuItem.id}}" app-path>{{menuItem.name}}</a></li></ul></div></div></li><li class="dropdown zn-var-width-more-button topnav-nav-item" zn-var-width-more-button ng-show="extraItems.length > 0"><a class="dropdown-toggle" tooltip="More"><i class="icon-ellipsis"></i></a><ul class="dropdown-menu nav-icons-extra" zn-var-width-extra-list><li class="{{item.classes()}}" ng-if="item.show()" ng-mouseenter="item.mouseenter()" ng-mouseleave="item.mouseleave()" ng-repeat="item in extraItems"><a tooltip="{{item.title}}" href="{{item.path()}}" app-path><i class="icon {{item.icon}}"></i> <span class="navbar-itemtext">{{item.title}}</span></a></li></ul></li></ul></div></div></div>')
       }])
       .service('znPluginEvents', ['$rootScope', function ($rootScope) {
         function subscribe (event, optionalCB) {
@@ -251,6 +262,79 @@ plugin.sizer = new ContentSizer(async dimensions => {
         return function (message, type, duration) {
           return client.call({ method: 'message', args: { params: { message, type, duration } } })
         }
+      }])
+      .controller('modalCntl', ['$scope', '$rootScope', '$templateCache', function ($scope, $rootScope, $templateCache) {
+
+        $rootScope.$watch('seedData', seedData => {
+          if (seedData) {
+
+            angular.forEach(seedData, (value, key) => {
+              if (key === 'scope') {
+                angular.forEach(seedData[key], (v, k) => {
+                  $scope[k] = v
+                })
+              } else {
+                $scope[key] = value
+              }
+            })
+
+            if (seedData.template && !seedData.templateUrl) {
+              $templateCache.put('modal-body-template', seedData.template)
+              $scope.templateUrl = 'modal-body-template'
+            }
+
+            $scope.setBtnDisabled = (name, disabled = true) => {
+              $scope.btns[name].disabled = disabled
+            }
+          }
+
+          const sendStuff = name => (data, keepOpen) => {
+            client.call({
+              method: name,
+              args: {
+                payload: {
+                  data,
+                  keepOpen
+                }
+              }
+            })
+          }
+
+          $scope.setBtnAction = (name, callback) => {
+            $scope.callbacks[name] = () => {
+              callback(sendStuff(name))
+            }
+          }
+
+          $scope.callbacks = {}
+
+          angular.forEach(seedData.btns, (btn, name) => {
+
+            if (btn.template) {
+              $templateCache.put(name, btn.template)
+            }
+            if (btn.action) {
+              $scope.callbacks[name] = function () {
+                client.call({
+                  method: name,
+                  args: { payload: {} }
+                })
+              }
+            } else {
+              $scope.callbacks[name] = function () {
+
+                if (btn.close !== false) {
+                  $scope.close()
+                }
+              }
+            }
+          })
+        })
+
+        $scope.close = function() {
+          client.call({ method: 'close', args: { payload: {} } })
+        }
+
       }])
       .service('znPluginData', ['$q', function ($q) {
         return function (namespace) {

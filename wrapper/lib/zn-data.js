@@ -325,7 +325,7 @@ export function ZnData (plugin) {
 
     return function (name) {
       if (!(name in _resources)) {
-        throw new Error("Resource '" + name + "' doesn't exist.")
+        throw new Error('Resource \'' + name + '\' doesn\'t exist.')
       }
 
       if (name === 'Calculate') {

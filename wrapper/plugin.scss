@@ -11,6 +11,8 @@
 @import './css/angularjs-dropdown-multiselect.css';
 @import './css/app.min.css';
 @import './css/default-plugins.min.css';
+/* uncomment this line if you are using frontend config: */
+/* @import '@zenginehq/frontend-config/src/plugin.css'; */
 
 body {
   background: none;
@@ -21,6 +23,31 @@ body {
 .fullPage,
 .settings {
 	padding: .5em 48px 2em;
+}
+
+.modal {
+  display: block;
+  z-index: 1050;
+  width: 100%;
+  height: 100%;
+  background-color: unset;
+  border: unset;
+  -webkit-border-radius: unset;
+  -moz-border-radius: unset;
+  border-radius: unset;
+  -webkit-box-shadow: unset;
+  -moz-box-shadow: unset;
+  box-shadow: unset;
+  -webkit-background-clip: unset;
+  -moz-background-clip: unset;
+  background-clip: unset;
+  bottom: unset;
+  overflow-x: unset;
+  overflow-y: unset;
+  margin-left: unset;
+  position: unset;
+  top: unset;
+  left: unset;
 }
 
 /* PLUGIN_CSS */

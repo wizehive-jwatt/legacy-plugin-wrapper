@@ -542,7 +542,7 @@ export function Filters (plugin) {
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
-        "'": '&#39;',
+        '\'': '&#39;',
         '/': '&#x2F;'
       }
 

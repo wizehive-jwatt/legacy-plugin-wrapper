@@ -8,6 +8,8 @@
         "Promise": "readonly"
     },
     "rules": {
+        "quotes": ["error", "single"],
+        "semi": ["error", "never"],
         "no-unused-vars": "warn"
     }
 }

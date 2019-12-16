@@ -23,8 +23,8 @@
   <script type="text/ng-template" id="modal-template">
     <div class="modal" ng-class="classes">
       <div ng-if="header" class="modal-header" ng-class="header.classes">
-        <a ng-show="closeButton !== false" ng-click="close()" class="close">&times</a>
-        <h3><span ng-if="header.icon"><i ng-class="header.icon"></i> </span>{{title}}</h3>
+        <a ng-show="closeButton !== false && !error" ng-click="close()" class="close">&times</a>
+        <h3><span ng-if="header.icon"><i ng-class="header.icon"></i></span>{{title}}</h3>
       </div>
       <div class="modal-body" ng-include="templateUrl"></div>
       <div class="modal-footer">

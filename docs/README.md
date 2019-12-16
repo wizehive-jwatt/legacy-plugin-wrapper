@@ -60,7 +60,10 @@ If you just want a snapshot of the steps, try walking through this first, and co
     Please Note:
 
     - The migrator automatically updates your source code in a few specific ways. See List of [Migration Code Mods](#migration-code-mods) for more details.
-    - There are also some [build time nuances](#build-process-nuances) you should read about
+
+    - There are some [build time nuances](#build-process-nuances) you should read about
+
+    - You'll definitely want to read about [Namespaces and Environments](#environments) to understand how to execute your dev and build commands.
 
 4. Configure your plugin's live mode to point to `https://localhost:1234` in the Zengine UI
 
@@ -168,6 +171,14 @@ The Zengine Legacy Wrapper uses Parcel (version 1.12.3) to transpile, serve, and
 With that in mind, here are a few nuances to be aware of during the build process
 
 - When building a plugin with Handlebars imported (true by default), ignore the build error that shows up regarding the fs library. It’s a red herring and won’t affect your plugin from running successfully. _On occasion, the build will appear to hang_, **simply wait** (usually no more than 10s) and it often will kick in again and fix itself. Otherwise, just restart the server (`npm start`), and possibly delete `.cache/`. If you are not using Handlebars in your plugin, feel free to [remove it](#removing-dependencies).
+
+## Environments
+
+Just like Mayan could take a specific environment from the maya.json, the `ZENGINE_ENV` shell variable is used to determine that environment.
+
+To help you take advantage of this variable easily, a list of build and dev scripts are automatically created based on the current maya.json environments. Whichever environment is designated as default is used to augment the `start` and `build` script, so you can run `npm start` for your default environment, or specify an environment with `npm run dev-env-name` to serve locally and `npm run build-env-name` to build for deployment.
+
+Consult your package.json to see what commands are currently available or to adjust them to your needs after the same patterns.
 
 ## Managing Dependencies
 

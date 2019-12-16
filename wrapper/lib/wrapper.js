@@ -349,7 +349,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
       }])
       .service('znPluginData', ['$q', function ($q) {
         return function (namespace) {
-          if (namespace === 'wgn') {
+          if (namespace === 'wgn') { // this will never actually happen
             namespace = context.plugin.namespace
           }
 

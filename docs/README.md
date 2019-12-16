@@ -189,13 +189,9 @@ During the migration process (running `zmig` in your frontend code directory), s
 
 ### Plugin Namespace
 
-1. Your plugin's namespace was likely "camelCased," and we have converted all of these namespaces to "kebab-case," so they can be used as valid sub-domains. Because of this, the zengine-migrator automatically modifies all namespaces found in the maya.json, maya.example.json, or maya.default.json from camelCase to kebab-case. Any namespace that is already a valid kebab-case string will not be modified.
+Access to the plugin's namespace in frontend code was previously possible via `$scope.pluginName` or `$scope.$parent.pluginName`. This is no longer true, but the namespace _is_ available via `plugin.namespace`, so your source code is automatically modified accordingly.
 
-    Example: `"namespace": "myNamespace"` => `"namespace": "my-namespace"`
-
-2. Access to the plugin's namespace in frontend code was previously possible via `$scope.pluginName` or `$scope.$parent.pluginName`. This is no longer true, but the namespace _is_ available via `plugin.namespace`, so your source code is automatically modified accordingly.
-
-    Example: `const namespace = $scope.pluginName` => `const namespace => plugin.namespace`
+Example: `var namespace = $scope.pluginName` => `var namespace => plugin.namespace`
 
 ### $window
 

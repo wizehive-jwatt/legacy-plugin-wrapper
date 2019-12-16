@@ -265,6 +265,8 @@ plugin.sizer = new ContentSizer(async dimensions => {
       }])
       .controller('modalCntl', ['$scope', '$rootScope', '$templateCache', function ($scope, $rootScope, $templateCache) {
 
+        const escListener = e => e.which === 27 && $scope.close()
+
         $rootScope.$watch('seedData', seedData => {
           if (seedData) {
 
@@ -277,6 +279,10 @@ plugin.sizer = new ContentSizer(async dimensions => {
                 $scope[key] = value
               }
             })
+
+            if ($scope.closeButton !== false) {
+              window.addEventListener('keydown', escListener)
+            }
 
             if (seedData.template && !seedData.templateUrl) {
               $templateCache.put('modal-body-template', seedData.template)
@@ -313,6 +319,7 @@ plugin.sizer = new ContentSizer(async dimensions => {
             if (btn.template) {
               $templateCache.put(name, btn.template)
             }
+
             if (btn.action) {
               $scope.callbacks[name] = function () {
                 client.call({
@@ -334,6 +341,10 @@ plugin.sizer = new ContentSizer(async dimensions => {
         $scope.close = function() {
           client.call({ method: 'close', args: { payload: {} } })
         }
+
+        $scope.$on('destroy', () => {
+          window.removeEventListener('keydown', escListener)
+        })
 
       }])
       .service('znPluginData', ['$q', function ($q) {

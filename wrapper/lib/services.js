@@ -1072,9 +1072,9 @@ export function Services (plugin) {
           callback: () => {
             if (typeof options.afterClose === 'function' && isOpen) {
               options.afterClose()
-
-              $rootScope.$apply()
             }
+
+            $rootScope.$apply()
 
             isOpen = false
           }
@@ -1084,9 +1084,9 @@ export function Services (plugin) {
           close: function () {
             if (typeof options.afterClose === 'function' && isOpen) {
               options.afterClose()
-
-              $rootScope.$apply()
             }
+
+            $rootScope.$apply()
 
             isOpen = false
           }

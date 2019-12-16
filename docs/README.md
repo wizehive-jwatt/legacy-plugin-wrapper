@@ -7,7 +7,7 @@ NodeJS: version 10.10+
 
 If you just want a snapshot of the steps, try walking through this first, and consult the expanded docs below if you get stuck.
 
-**If you're using Mayan, and you haven't created a maya.json, do that first!**
+**If you're using Mayan, and you haven't created a maya.json with a default environment, do that first!**
 
 1. cd into your plugin's frontend code directory (in mayan projects: `cd ./plugins/name-of-plugin`)
 2. `npm i -g ZengineHQ/zengine-migrator` to install the migrator tool globally

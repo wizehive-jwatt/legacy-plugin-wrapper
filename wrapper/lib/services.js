@@ -577,7 +577,7 @@ export function Services (plugin) {
           return disallowedFieldTypes.concat(fieldTypeBlacklist)
         }
       }])
-    .service('filterWorkspace', ['$rootScope', function filterWorkspaceService ($rootScope) {
+    .service('filterWorkspace', ['$rootScope', '$q', function filterWorkspaceService ($rootScope, $q) {
       /**
        * Workspace Data Indexed by Workspace Id
        *
@@ -591,14 +591,20 @@ export function Services (plugin) {
      * @param	{object}	options
      * @returns	{promise}
      */
-      async function getWorkspace (/* options, skipCache */) {
+      function getWorkspace () {
         if ($rootScope.workspace) {
-          return $rootScope.workspace
+          return $q.when($rootScope.workspace)
         }
 
-        const context = await client.call({ method: 'context' })
+        const deferred = $q.defer()
 
-        return context.workspace
+        client.call(
+          { method: 'context' }
+        ).then(context => {
+          deferred.resolve(context.workspace)
+        })
+
+        return deferred.promise
       }
 
       /**

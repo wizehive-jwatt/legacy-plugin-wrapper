@@ -123,7 +123,7 @@ If you just want a snapshot of the steps, try walking through this first, and co
 
 5. Acceptance test your plugin (and fix anything that broke)
 
-    In the case of "simpler" plugins, the migration should be sufficient to convert the plugin to a working version 2 plugin. However, acceptance testing is strongly recommended to ensure the plugin's behavior has not changed or broken. Below are some known issues that may arise and how to fix them if they do. You can also run `npm run legacy-lint` to get immediate feedback on some of these issues.
+    In the case of "simpler" plugins, the migration should be sufficient to convert the plugin to a working version 2 plugin. However, acceptance testing is strongly recommended to ensure the plugin's behavior has not changed or broken. Below are some known issues that may arise and how to fix them if they do. You can also run `npm run lint-legacy` to get immediate feedback on some of these issues.
 
     - Using native `Promise`s in your source code will create unexpected behavior. Refactor those Promises to use $q from angular instead
 

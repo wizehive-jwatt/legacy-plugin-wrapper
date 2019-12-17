@@ -57,9 +57,59 @@ If you just want a snapshot of the steps, try walking through this first, and co
     npm start # spins up development server at localhost:1234
     ```
 
+    New structure of your project:
+
+        ├── backend/**/*.*
+        ├── plugins
+        │   └── name-of-plugin <-- this folder is where all of the changes take place
+        │       ├── .legacy-output (this is a cached version of the collated and modified source files)
+        │       ├── dist (this has the final deliverable files after running a dev or build command)
+        │       ├── docs
+        │       │   └── README.md (the one you're reading right now)
+        │       ├── node_modules (after you npm install, at least)
+        │       ├── src
+        │       │   ├── example-main.css
+        │       │   ├── example-main.html
+        │       │   └── example-main.controller.js
+        │       ├── vendor
+        │       │   ├── bootstrap.js
+        │       │   ├── import-jquery.js
+        │       │   └── validators.js
+        │       ├── wrapper
+        │       │   ├── css
+        │       │   ├── fonts
+        │       │   ├── images
+        │       │   ├── imgs
+        │       │   ├── lib
+        │       │   │   ├── directives.js
+        │       │   │   ├── filters.js
+        │       │   │   ├── services.js
+        │       │   │   ├── wrapper.js
+        │       │   │   ├── zn-data.js
+        │       │   │   └── zn-form.js
+        │       │   ├── index.html
+        │       │   ├── plugin.js
+        │       │   ├── plugin.scss
+        │       │   └── zn-form.js
+        │       ├── .eslint-legacy.json
+        │       ├── .eslint-src.json
+        │       ├── .eslint-wrapper.json
+        │       ├── .gitignore
+        │       ├── package.json
+        │       ├── package-lock.json
+        │       └── plugin-register.js
+        ├── maya_build/**/*.*
+        ├── maya.json   # If you don't have this, you need it!
+        ├── maya.example.json
+        ├── node_modules
+        ├── README.md
+        ├── package.json
+        ├── package-lock.json
+        └── .gitignore
+
     Please Note:
 
-    - The migrator automatically updates your source code in a few specific ways. See List of [Migration Code Mods](#migration-code-mods) for more details.
+    - The migrator automatically updates your source code (your original files in `./src/`) in a few specific ways. See List of [Migration Code Mods](#migration-code-mods) for more details.
 
     - There are some [build time nuances](#build-process-nuances) you should read about
 

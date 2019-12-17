@@ -188,7 +188,7 @@ export function ZnData (plugin) {
           }
         }
 
-        const objectVersionField = options.objectVersionField
+        const objectVersionField = options && options.objectVersionField ? options.objectVersionField : false;  
 
         return request(path, { pathParams, objectVersionField }, method, params, data, success, error)
       }
